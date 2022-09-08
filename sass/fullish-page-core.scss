@@ -24,38 +24,41 @@
 			display: block;
 		}
 	}
+}
 
-	/*
-	 * Initialization stage
-	 *
-	 * Note: Execution order and html attribute is organized as follows:
-	 * # Initialization
-	 * 1. `beforeInit` is invoked.
-	 * 2. Attribute [data-fullish-page-mode] is added to .fullish-page 
-	 *     at the beginningn of `setMode`.
-	 * 3. Class name .fp-mode-full-page or .fp-mode-static is added to .fullish-page
-	 *     at the end of `setMode`.
-	 * 4. Class name .fp-initialized is added
-	 *     towards the end of `init`.
-	 * 5. `afterInit` is invoked.
-	 *
-	 * # Destroy
-	 * 1. `beforeDestroy` is invoked.
-	 * 2. 2-4 in initialization process is executed in reverse order 
-	 *     execpt to remove the attribute.
-	 * 3. `afterDestroy` is invoked.
-	 */
-
+/*
+ * Initialization stage
+ *
+ * Note: Execution order and html attribute is organized as follows:
+ * # Initialization
+ * 1. `beforeInit` is invoked.
+ * 2. Attribute [data-fullish-page-mode] is added to .fullish-page 
+ *     at the beginningn of `setMode`.
+ * 3. Class name .fp-mode-full-page or .fp-mode-static is added to .fullish-page
+ *     at the end of `setMode`.
+ * 4. Class name .fp-initialized is added
+ *     towards the end of `init`.
+ * 5. `afterInit` is invoked.
+ *
+ * # Destroy
+ * 1. `beforeDestroy` is invoked.
+ * 2. 2-4 in initialization process is executed in reverse order 
+ *     execpt to remove the attribute.
+ * 3. `afterDestroy` is invoked.
+ */
+.fullish-page {
 	// Static mode
 	&[data-fullish-page-mode='static'],
 	&.fp-mode-static {
 	}
 
 	// FullPage mode before initializing finishes
+	// .fullish-page will grow to the total height of all panels (set by Javascript)
 	&[data-fullish-page-mode='full-page'],
 	&.fp-mode-full-page {
 		.fullish-page-wrapper {
 			position: sticky;
+			top: 0;
 			height: 100vh;
 		}
 
