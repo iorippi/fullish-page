@@ -121,7 +121,7 @@ const FullishPage = class {
 		// Set GSAP ScrollTrigger
 		if (mode === 'fullPage') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'full-page');
-			console.log('[FullishPage.setMode] Setting full-page mode.');
+			console.info('[FullishPage.setMode] Setting full-page mode.');
 			// Set height to .fullish-page with 
 			//  the total height of all panels
 			// TODO: Revisit
@@ -132,7 +132,7 @@ const FullishPage = class {
 			this.fpContainer.classList.add('fp-mode-full-page');
 		} else if (mode === 'static') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'static');
-			console.log('[FullishPage.setMode] Setting static mode.'); // TODO
+			console.info('[FullishPage.setMode] Setting static mode.'); // TODO
 			this.fpContainer.classList.add('fp-mode-static');
 		}
 
