@@ -36,7 +36,7 @@ const FullishPage = class {
 		// Configurable variables
 		Object.entries({
 				fpContainerSel: '.fullish-page',
-				panelDepth: 0.5,
+				panelDepth: 0.5, // TODO: Do I need this?
 				duration: 1,
 			}).forEach(e => {
 				this[e[0]] = config[e[0]] ? config[e[0]] : e[1];
@@ -92,8 +92,11 @@ const FullishPage = class {
 		// Set resize event action
 		// Get the width of the window minus the scrollbar and borders
 		this.currentScreenWidth = document.body.clientWidth;
-		this.onResize = this.onResize.bind(this);
+		if (!resized)
+			this.onResize = this.onResize.bind(this);
 		window.addEventListener('resize', this.onResize);
+
+		// TODO: Disable scroll depth history; maybe make it configurable?
 
 		// Set mode to either 'fullPage' or 'static'
 		this.setMode(this.defineMode());
@@ -118,11 +121,18 @@ const FullishPage = class {
 		// Set GSAP ScrollTrigger
 		if (mode === 'fullPage') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'full-page');
-			console.log('Starting to set fullPage  mode'); // TODO
+			console.log('[FullishPage.setMode] Setting full-page mode.');
+			// Set height to .fullish-page with 
+			//  the total height of all panels
+			// TODO: Revisit
+			gsap.set(this.fpContainer, {
+				height: (this.fpPanels.length * this.panelDepth * 100 + 100) + "vh",
+			});
+			this.panelScrollDepth = this.fpPanels[0].scrollHeight * this.panelDepth; // TODO Do I need this??
 			this.fpContainer.classList.add('fp-mode-full-page');
 		} else if (mode === 'static') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'static');
-			console.log('Starting to set static mode'); // TODO
+			console.log('[FullishPage.setMode] Setting static mode.'); // TODO
 			this.fpContainer.classList.add('fp-mode-static');
 		}
 
@@ -137,6 +147,8 @@ const FullishPage = class {
 		this.fpContainer.classList.remove('fp-mode-full-page', 'fp-mode-static');
 		// TODO: remove GSAP ScrollTrigger here.
 		this.panelScrollDepth = null;
+
+		window.removeEventListener('resize', this.onResize);
 
 		this.fpContainer.removeAttribute('data-fullish-page-mode');
 		this.afterDestroy();

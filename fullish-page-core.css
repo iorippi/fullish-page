@@ -7,26 +7,6 @@
   position: relative;
   width: 100%;
   height: auto;
-  /*
-   * Initialization stage
-   *
-   * Note: Execution order and html attribute is organized as follows:
-   * # Initialization
-   * 1. `beforeInit` is invoked.
-   * 2. Attribute [data-fullish-page-mode] is added to .fullish-page 
-   *     at the beginningn of `setMode`.
-   * 3. Class name .fp-mode-full-page or .fp-mode-static is added to .fullish-page
-   *     at the end of `setMode`.
-   * 4. Class name .fp-initialized is added
-   *     towards the end of `init`.
-   * 5. `afterInit` is invoked.
-   *
-   * # Destroy
-   * 1. `beforeDestroy` is invoked.
-   * 2. 2-4 in initialization process is executed in reverse order 
-   *     execpt to remove the attribute.
-   * 3. `afterDestroy` is invoked.
-   */
 }
 .fullish-page .fullish-page-wrapper {
   display: block;
@@ -42,8 +22,30 @@
 .fullish-page .panel .panel-container {
   display: block;
 }
+
+/*
+ * Initialization stage
+ *
+ * Note: Execution order and html attribute is organized as follows:
+ * # Initialization
+ * 1. `beforeInit` is invoked.
+ * 2. Attribute [data-fullish-page-mode] is added to .fullish-page 
+ *     at the beginningn of `setMode`.
+ * 3. Class name .fp-mode-full-page or .fp-mode-static is added to .fullish-page
+ *     at the end of `setMode`.
+ * 4. Class name .fp-initialized is added
+ *     towards the end of `init`.
+ * 5. `afterInit` is invoked.
+ *
+ * # Destroy
+ * 1. `beforeDestroy` is invoked.
+ * 2. 2-4 in initialization process is executed in reverse order 
+ *     execpt to remove the attribute.
+ * 3. `afterDestroy` is invoked.
+ */
 .fullish-page[data-fullish-page-mode=full-page] .fullish-page-wrapper, .fullish-page.fp-mode-full-page .fullish-page-wrapper {
   position: sticky;
+  top: 0;
   height: 100vh;
 }
 .fullish-page[data-fullish-page-mode=full-page] .panel, .fullish-page.fp-mode-full-page .panel {
