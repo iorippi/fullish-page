@@ -1,0 +1,59 @@
+/*
+ * Fullishpage
+ * Core CSS
+ */ 
+
+.fullish-page {
+	display: block;
+	position: relative;
+	width: 100%; // Should be equal to the maximum viewport width
+	height: auto;
+
+	.fullish-page-wrapper {
+		display: block;
+		position: relative;
+		width: inherit;
+		height: inherit;
+	}
+
+	.panel {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		.panel-container {
+			display: block;
+		}
+	}
+
+	// Initialized State
+	&.initialized {
+	}
+
+	// Static mode
+	&.initialized.static {
+	}
+
+	// Fullpage mode
+	&.initialized.fullpage {
+		.fullish-page-wrapper {
+			position: sticky;
+			height: 100vh;
+		}
+
+		.panel {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: inherit;
+			height: inherit;
+			&:not(:first-child) {
+				// Display only the first panel.
+				// Will be overrode by GSAP autoAlpha
+				visibility: hidden;
+				opacity: 0;
+			}
+			.panel-container {
+			}
+		}
+	}
+}

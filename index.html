@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>FullishPage Demo page</title>
+	<link rel="stylesheet" href="./fullish-page-core.css" media="all">
+	<link rel="stylesheet" href="./style.css" media="all">
+</head>
+<body>
+
+<header>
+	<h1>FullishPage Demo page</h1>
+</header>
+
+<div class="spacer"></div>
+
+<!--
+	Fullishpage
+
+	[Required structure]
+	.fullish-page[#example-id]
+	- .fullish-page-wrapper
+	  - .panel (as needed)
+		  - .panel-container
+-->
+<main id="demo1" class="fullish-page">
+	<div class="fullish-page-wrapper">
+		<section class="panel">
+			<div class="panel-container">
+				<h2>Panel #1</h2>
+			</div>
+		</section>
+		<section class="panel">
+			<div class="panel-container">
+				<h2>Panel #2</h2>
+			</div>
+		</section>
+		<section class="panel">
+			<div class="panel-container">
+				<h2>Panel #3</h2>
+			</div>
+		</section>
+	</div>
+</main>
+
+<div class="spacer"></div>
+
+<footer>
+	&copy;2022 iorippi
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js" id="gsap-core-js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/ScrollTrigger.min.js" id="gsap-scrolltrigger-js"></script>
+<script src="./fullish-page.js" id="fullish-page-js"></script>
+<script src="./index.js" id="index-js"></script>
+</body>
+</html>
