@@ -75,7 +75,7 @@ const FullishPage = class {
 	onResize() {
 		// Take action only when the width were changed.
 		// Get the width of the window minus the scrollbar and borders
-		let screenWidth = window.clientWidth;
+		let screenWidth = document.body.clientWidth;
 		if (screenWidth === this.currentScreenWidth) return;
 		else {
 			this.currentScreenWidth = screenWidth;
@@ -89,7 +89,7 @@ const FullishPage = class {
 
 		// Set resize event action
 		// Get the width of the window minus the scrollbar and borders
-		this.currentScreenWidth = window.clientWidth;
+		this.currentScreenWidth = document.body.clientWidth;
 		this.onResize = this.onResize.bind(this);
 		window.addEventListener('resize', this.onResize);
 
@@ -176,11 +176,11 @@ const FullishPage = class {
 	defineMode() {
 		// Determines adequate mode and return the mode name [static|fullPage]
 		// Get the height of the window minus the scrollbar and borders
-		let screenHeight = window.clientHeight;
+		let screenHeight = window.innerHeight;
 
 		// Get the biggest height of panels
 		let maxPanelHeight = this.fpPanels.reduce((prevHeight, curPanel) => {
-			return Math.max(prevHeight, curPanel.clientHeight);
+			return Math.max(prevHeight, curPanel.scrollHeight);
 		}, 0);
 
 		// Set mode to static if any panel is higher than the height of the window
