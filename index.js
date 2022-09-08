@@ -1,1 +1,1 @@
-const fp = new fullishPage();
+const fp = new FullishPage();
