@@ -1,0 +1,30 @@
+body {
+	background-color: #bae6ff;
+}
+.spacer {
+	height: 150vh;
+}
+
+// Fullishpage: core
+#demo1 .panel-container {
+	padding: 50px 80px;
+	width: 100%;
+}
+
+// Fullishpage: panels
+#demo1 .panel {
+}
+#demo1 .panel:nth-child(1) {
+	background-color: #004144;
+}
+#demo1 .panel:nth-child(2) {
+	background-color: #005d5d;
+}
+#demo1 .panel:nth-child(3) {
+	background-color: #007d79;
+}
+#demo1 .panel-container {
+	h2 {
+		color: #ffffff;
+	}
+}

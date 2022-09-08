@@ -1,0 +1,41 @@
+/*
+ * Fullishpage
+ * Core CSS
+ */
+.fullish-page {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+.fullish-page .fullish-page-wrapper {
+  display: block;
+  position: relative;
+  width: inherit;
+  height: inherit;
+}
+.fullish-page .panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.fullish-page .panel .panel-container {
+  display: block;
+}
+.fullish-page.initialized.fullpage .fullish-page-wrapper {
+  position: sticky;
+  height: 100vh;
+}
+.fullish-page.initialized.fullpage .panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: inherit;
+  height: inherit;
+}
+.fullish-page.initialized.fullpage .panel:not(:first-child) {
+  visibility: hidden;
+  opacity: 0;
+}
+
+/*# sourceMappingURL=fullish-page-core.css.map */
