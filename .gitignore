@@ -1,0 +1,10 @@
+# compiled styles
+/style.css
+/style.css.map
+
+# misc
+.DS_Store
+
+# Vim
+*.swp
+*.swo
