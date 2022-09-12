@@ -168,7 +168,7 @@ const FullishPage = class {
 
 				// Panel transition
 				if (i < panels.length - 1) { // not the last panel
-					fullPage.set(fp.fpContainer, {
+					fullPage.set(null, {
 						onComplete: panelTransitionHandler.bind(this),
 						onCompleteParams: [i + 1],
 						onReverseComplete: panelTransitionHandler.bind(this),
@@ -195,9 +195,16 @@ const FullishPage = class {
 		this.beforeDestroy();
 		this.fpContainer.classList.remove('fp-initialized');
 
-		this.fpContainer.classList.remove('fp-mode-full-page', 'fp-mode-static');
-		// TODO: remove GSAP ScrollTrigger here.
-		this.fullPage.kill();
+		let container = gsap.utils.selector(this.fpContainer);
+		if (this.mode === 'fullPage') {
+			this.fpContainer.classList.remove('fp-mode-full-page');
+			this.fullPage.kill();
+			gsap.set([this.fpContainer, container('*')], {
+				clearProps: "all",
+			});
+		} else if (this.mode === 'static') {
+			this.fpContainer.classList.remove('fp-mode-static');
+		}
 
 		window.removeEventListener('resize', this.onResize);
 
