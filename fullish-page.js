@@ -98,7 +98,7 @@ const FullishPage = class {
 	}
 
 	get config() {
-		return this#config,
+		return this.#config;
 	}
 
 	get props() {
@@ -162,7 +162,7 @@ const FullishPage = class {
 
 		// Set GSAP ScrollTrigger
 		if (mode === 'fullPage') {
-			this.fullPage = this.fullPageTimeline();
+			this.fullPage = this.#fullPageTimeline();
 			this.#currentPanelIndex = 0;
 			this.#fpContainer.classList.add('fp-mode-full-page');
 		} else if (mode === 'static') {
@@ -175,7 +175,7 @@ const FullishPage = class {
 		this.#mode = mode;
 	}
 
-	fullPageTimeline() {
+	#fullPageTimeline() {
 		this.#fpContainer.setAttribute('data-fullish-page-mode', 'full-page');
 		this.log('[FullishPage.setMode] Setting full-page mode.');
 
