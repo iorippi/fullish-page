@@ -67,7 +67,6 @@ const FullishPage = class {
 		this.fpPanels = gsap.utils.toArray(document.querySelectorAll(this.fpContainerSel + ' > .fullish-page-wrapper > .panel'));
 		this.currentPanelIndex = null;
 		this.currentScreenWidth = null;
-		this.panelScrollDepth = null; // [fullPage mode only] panel's height
 	}
 
 	/*
@@ -126,7 +125,6 @@ const FullishPage = class {
 			gsap.set(this.fpContainer, {
 				height: (this.fpPanels.length * this.panelDepth * 100) + "vh",
 			});
-			this.panelScrollDepth = this.fpPanels[0].scrollHeight * this.panelDepth; // TODO Do I need this??
 			this.fpContainer.classList.add('fp-mode-full-page');
 		} else if (mode === 'static') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'static');
@@ -144,7 +142,6 @@ const FullishPage = class {
 
 		this.fpContainer.classList.remove('fp-mode-full-page', 'fp-mode-static');
 		// TODO: remove GSAP ScrollTrigger here.
-		this.panelScrollDepth = null;
 
 		window.removeEventListener('resize', this.onResize);
 
@@ -156,12 +153,7 @@ const FullishPage = class {
 		let targetDepth;
 
 		if (this.mode === 'fullPage') {
-			if (targetPanelIndex >= 0 && targetPanelIndex < this.fpPanels.length && this.panelScrollDepth !== null)
-				targetDepth = this.fpContainer.offsetTop + this.panelScrollDepth * targetPanelIndex;
-			else if (this.panelScrollDepth === null)
-				console.error(`[FullishPage.scrollTo] 'panelScrollDepth' is null. Check if 'setMode("fullPage")' is adequately executed.`);
-			else
-				console.error(`[FullishPage.scrollTo] Invalid parameter '${targetPanelIndex}' is passed as 'targetPanelIndex'. It must be the Number greater than or equal to 0, and less then the length of 'fpPanels'`);
+			targetDepth = Math.ceil(this.fullPage.scrollTrigger.labelToScroll('panel-' + i));
 		} else if (this.mode === 'static') {
 			targetDepth = this.fpPanels[targetPanelIndex].offsetTop;
 		}
