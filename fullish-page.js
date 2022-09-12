@@ -286,6 +286,7 @@ const FullishPage = class {
 			defaults: {
 				overwrite: true,
 				duration: this.panelTransitionDuration,
+				ease: "none",
 			}
 		});
 		tl.to(this.fpPanels, {
