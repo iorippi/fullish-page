@@ -151,6 +151,8 @@ const FullishPage = class {
 				}
 			});
 
+			// Wait for a moment until executing transition
+			// to prevent panels in between the current and the target panel appearing mid-transition
 			let panelTransitionTimer;
 			let panelTransitionHandler = (nextIndex) => {
 				clearTimeout(panelTransitionTimer);
