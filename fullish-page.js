@@ -122,11 +122,9 @@ const FullishPage = class {
 		if (mode === 'fullPage') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'full-page');
 			console.info('[FullishPage.setMode] Setting full-page mode.');
-			// Set height to .fullish-page with 
-			//  the total height of all panels
-			// TODO: Revisit
+			// Set height of container to the total scroll height of all panels
 			gsap.set(this.fpContainer, {
-				height: (this.fpPanels.length * this.panelDepth * 100 + 100) + "vh",
+				height: (this.fpPanels.length * this.panelDepth * 100) + "vh",
 			});
 			this.panelScrollDepth = this.fpPanels[0].scrollHeight * this.panelDepth; // TODO Do I need this??
 			this.fpContainer.classList.add('fp-mode-full-page');
