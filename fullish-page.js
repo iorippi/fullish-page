@@ -37,8 +37,12 @@ const FullishPage = class {
 		Object.entries({
 				fpContainerSel: '.fullish-page',
 				panelDepth: 1, // 1 = 100vh
-				panelTransitionDuration: 1, // seconds
-				panelAnimationHideDuration: 1, // seconds
+				// Default:
+				// panelAnimationDelay = panelTransitionDuration + panelAnimationHideDuration
+				// -> Animation will start after both of the previous panel action (hide) and panel transition has finished
+				panelTransitionDuration: 0.5, // seconds
+				panelAnimationHideDuration: 0.5, // seconds
+				panelAnimationDelay: 1, // seconds: 
 				fastScrollThreshold: 2500, // pixels per second
 				triggerStart: "top top",
 				triggerEnd: "bottom bottom",
@@ -153,17 +157,19 @@ const FullishPage = class {
 					fastScrollEnd: this.fastScrollThreshold,
 					// Complete timeline for the first panel
 					onEnter: () => {
-						this.panelActionShow(this.fpPanels[0], 0, this.panelTransitionDuration); 
+						this.panelActionShow(this.fpPanels[0], 0, 0); // Zero delay
 					},
 					// Complete timeline for the last panel
+					// (fallback in case the last panel was not displayed in the last time scroll left the trigger)
 					onEnterBack: () => {
 						let lastIndex = this.fpPanels.length - 1;
-						this.panelTransition(lastIndex);
-						this.panelActionShow(this.fpPanels[lastIndex], lastIndex, this.panelTransitionDuration); 
+						this.panelTransition(lastIndex, 0); // Zero delay
+						this.panelActionShow(this.fpPanels[lastIndex], lastIndex, this.panelTransitionDuration);
 					},
 				}
 			});
 
+			// Define timeline for each panels
 			this.fpPanels.forEach((panel, i, panels) => {    
 				fullPage.addLabel("panel-" + i);
 
@@ -201,6 +207,7 @@ const FullishPage = class {
 				}
 			});
 
+			// Finish setup for fullPage mode
 			this.currentPanelIndex = 0;
 			this.fullPage = fullPage;
 			this.fpContainer.classList.add('fp-mode-full-page');
@@ -223,6 +230,7 @@ const FullishPage = class {
 		if (this.mode === 'fullPage') {
 			this.fpContainer.classList.remove('fp-mode-full-page');
 			this.fullPage.kill();
+			this.fullPage = null;
 			gsap.set([this.fpContainer, container('*')], {
 				clearProps: "all",
 			});
@@ -281,10 +289,15 @@ const FullishPage = class {
 			return 'fullPage';
 	};
 
-	panelTransition(nextPanelIndex) {
+	panelTransition(nextPanelIndex, customDelay) {
+		let delay;
+		if (customDelay !== undefined)
+			delay = customDelay;
+		else
+			delay = this.panelAnimationHideDuration;
 		setTimeout(() => {
 			 console.log(`Panel: transition ${this.currentPanelIndex} => ${nextPanelIndex}`);
-		}, this.panelAnimationHideDuration);
+		}, delay * 1000);
 		let tl = gsap.timeline({ 
 			defaults: {
 				overwrite: true,
@@ -294,21 +307,21 @@ const FullishPage = class {
 		});
 		tl.to(this.fpPanels, {
 			autoAlpha: 0,
-		}, this.panelAnimationHideDuration);
+		}, delay);
 		tl.to(this.fpPanels[nextPanelIndex], {
 			autoAlpha: 1,
 		}, "<");
 		this.currentPanelIndex = nextPanelIndex;
 	};
 
-	panelActionShow(panel, panelIndex, immediate = false) {
+	panelActionShow(panel, panelIndex, customDelay) {
 		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
 				direction = this.fullPage.scrollTrigger.direction,
 		    delay;
-		if (immediate)
-			delay = 0;
+		if (customDelay !== undefined)
+			delay = customDelay;
 		else
-			delay = (this.panelTransitionDuration + this.panelAnimationHideDuration) * 1000;
+			delay = this.panelAnimationDelay * 1000;
 		setTimeout(() => {
 			console.log(`Panel: action (show) ${panelIndex}, direction: ${direction}, isHighVelocity: ${isHighVelocity}`);
 
