@@ -152,12 +152,6 @@ const FullishPage = class {
 				fullPage.addLabel("panel-" + i);
 
 				// Panel action (show)
-				// NOTE: Adding minimum duration tween as a workaround for GSAP spec.
-				//       Zero duration tween at the beginning of timeline 
-				//       including .to[onComplete], .set and .call won't be executed
-				//       upon the positive direciton scroll 2nd time and later.
-				let durationPadding = 1 / 1000000000;
-				fullPage.to(null, { duration: durationPadding });
 				fullPage.call(this.beforePanelTransition.bind(this), [panel, i, panels]);
 
 				// Panel free scroll
