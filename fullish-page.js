@@ -55,6 +55,7 @@ const FullishPage = class {
 				fastScrollThreshold: 2500, // pixels per second
 				triggerStart: "top top",
 				triggerEnd: "bottom bottom",
+				debug: false,
 			}).forEach(entry => {
 				this[entry[0]] = config[entry[0]] ? config[entry[0]] : entry[1];
 			});
@@ -77,6 +78,10 @@ const FullishPage = class {
 		this.#fpWrapper = document.querySelector(this.selector + ' > .fullish-page-wrapper');
 		this.#fpPanels = gsap.utils.toArray(document.querySelectorAll(this.selector + ' > .fullish-page-wrapper > .panel'));
 		this.fullPage = null; // GSAP timeline handler for full-page mode
+	}
+
+	log(...params) {
+		if (this.debug) console.log(...params);
 	}
 
 	get props() {
@@ -141,7 +146,7 @@ const FullishPage = class {
 		// Set GSAP ScrollTrigger
 		if (mode === 'fullPage') {
 			this.#fpContainer.setAttribute('data-fullish-page-mode', 'full-page');
-			console.info('[FullishPage.setMode] Setting full-page mode.');
+			this.log('[FullishPage.setMode] Setting full-page mode.');
 
 			// Set height of container to the total scroll height of all panels
 			gsap.set(this.#fpContainer, {
@@ -227,7 +232,7 @@ const FullishPage = class {
 
 		} else if (mode === 'static') {
 			this.#fpContainer.setAttribute('data-fullish-page-mode', 'static');
-			console.info('[FullishPage.setMode] Setting static mode.'); // TODO
+			this.log('[FullishPage.setMode] Setting static mode.'); // TODO
 			this.#fpContainer.classList.add('fp-mode-static');
 		}
 
@@ -340,7 +345,7 @@ const FullishPage = class {
 	};
 
 	panelTransition(nextPanelIndex) {
-		console.log(`Panel: transition ${this.#currentPanelIndex} => ${nextPanelIndex}`);
+		this.log(`Panel: transition ${this.#currentPanelIndex} => ${nextPanelIndex}`);
 
 		let tl = gsap.timeline({ 
 			defaults: {
@@ -358,7 +363,7 @@ const FullishPage = class {
 	}
 
 	panelActionShow(panel, panelIndex, isHighVelocity) {
-		console.log(`Panel: action (show) ${panelIndex}`);
+		this.log(`Panel: action (show) ${panelIndex}`);
 
 		let p = gsap.utils.selector(panel);
 		gsap.to(p('h2'), {
@@ -367,7 +372,7 @@ const FullishPage = class {
 	}
 
 	panelActionHide(panel, panelIndex, isHighVelocity) {
-		console.log(`Panel: action (hide) ${panelIndex}`);
+		this.log(`Panel: action (hide) ${panelIndex}`);
 
 		let p = gsap.utils.selector(panel);
 		gsap.to(p('h2'), {
