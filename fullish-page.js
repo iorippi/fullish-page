@@ -125,11 +125,24 @@ const FullishPage = class {
 		if (mode === 'fullPage') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'full-page');
 			console.info('[FullishPage.setMode] Setting full-page mode.');
+
 			// Set height of container to the total scroll height of all panels
 			gsap.set(this.fpContainer, {
 				height: (this.fpPanels.length * this.panelDepth * 100) + "vh",
 			});
 
+			// Transition animation helper:
+			// Wait for a moment until executing transition
+			// to prevent panels in between the current and the target panel appearing mid-transition
+			let panelTransitionTimer;
+			let panelTransitionHandler = (nextIndex) => {
+				clearTimeout(panelTransitionTimer);
+				panelTransitionTimer = setTimeout(() => {
+					this.panelTransition(nextIndex);
+				}, 100);
+			}
+
+			// Main timeline
 			let fullPage = gsap.timeline({
 				scrollTrigger: {
 					markers: debug,
@@ -150,16 +163,6 @@ const FullishPage = class {
 					},
 				}
 			});
-
-			// Wait for a moment until executing transition
-			// to prevent panels in between the current and the target panel appearing mid-transition
-			let panelTransitionTimer;
-			let panelTransitionHandler = (nextIndex) => {
-				clearTimeout(panelTransitionTimer);
-				panelTransitionTimer = setTimeout(() => {
-					this.panelTransition(nextIndex);
-				}, 100);
-			}
 
 			this.fpPanels.forEach((panel, i, panels) => {    
 				fullPage.addLabel("panel-" + i);
