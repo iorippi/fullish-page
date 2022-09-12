@@ -32,6 +32,8 @@
 gsap.registerPlugin(ScrollTrigger);
 
 const FullishPage = class {
+	#modes = ['fullPage', 'static'];
+
 	constructor(config = {}) {
 		// Configurable variables
 		Object.entries({
@@ -68,7 +70,6 @@ const FullishPage = class {
 		// Set variables
 		this.initialized = false;
 		this.mode = null; // [fullPage|static]
-		this.modes = ['fullPage', 'static'];
 		this.fpContainer = document.querySelector(this.fpContainerSel);
 		this.fpWrapper = document.querySelector(this.fpContainerSel + ' > .fullish-page-wrapper');
 		this.fpPanels = gsap.utils.toArray(document.querySelectorAll(this.fpContainerSel + ' > .fullish-page-wrapper > .panel'));
@@ -118,7 +119,7 @@ const FullishPage = class {
 	setMode(mode, debug = false) {
 		// Check the parameter before execution.
 		try {
-			if (!this.modes.includes(mode))
+			if (!this.#modes.includes(mode))
 				throw `[FullishPage.setMode] Invalid parameter '${mode}' is passed as 'mode'. It must be either 'static' or 'fullPage'`;
 		} catch (e) {
 			console.error(e);
