@@ -55,6 +55,8 @@ const FullishPage = class {
 				fastScrollThreshold: 2500, // pixels per second
 				triggerStart: "top top",
 				triggerEnd: "bottom bottom",
+				nextButton: '.fullish-page-next', // TODO: Implement feature
+				prevButton: '.fullish-page-prev', // TODO: Implement feature
 				debug: false,
 			}).forEach(entry => {
 				this[entry[0]] = config[entry[0]] ? config[entry[0]] : entry[1];
