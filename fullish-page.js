@@ -32,14 +32,14 @@
 gsap.registerPlugin(ScrollTrigger);
 
 const FullishPage = class {
-	#modes = ['fullPage', 'static'];
-	#mode = null; // [fullPage|static]
-	#initialized = false;
+	#modes;
+	#mode;
+	#initialized;
 	#fpContainer;
 	#fpWrapper;
 	#fpPanels;
-	#currentPanelIndex = null;
-	#currentScreenWidth = null;
+	#currentPanelIndex;
+	#currentScreenWidth;
 
 	constructor(config = {}) {
 		// Configurable variables
@@ -76,6 +76,11 @@ const FullishPage = class {
 			});
 
 		// Set variables
+		this.#modes = ['fullPage', 'static'];
+		this.#mode = null; // [fullPage|static]
+		this.#initialized = false;
+		this.#currentPanelIndex = null;
+		this.#currentScreenWidth = null;
 		this.#fpContainer = document.querySelector(this.selector);
 		this.#fpWrapper = document.querySelector(this.selector + ' > .fullish-page-wrapper');
 		this.#fpPanels = gsap.utils.toArray(document.querySelectorAll(this.selector + ' > .fullish-page-wrapper > .panel'));
@@ -173,12 +178,44 @@ const FullishPage = class {
 		// Wait for a moment until executing transition
 		// to prevent panels in between the current and the target panel appearing mid-transition
 		let panelTransitionTimer;
-		function panelTransitionHandler(nextIndex) {
+		let panelTransitionHandler = (nextIndex) => {
 			clearTimeout(panelTransitionTimer);
 			panelTransitionTimer = setTimeout(() => {
-				this.panelTransitionExec(nextIndex);
+				panelTransitionExec(nextIndex);
 			}, 100);
 		}
+
+		// Panel transition wrapper function
+		let panelTransitionExec = (nextPanelIndex, customDelay) => {
+			let delay;
+			if (customDelay !== undefined)
+				delay = customDelay;
+			else
+				delay = this.panelAnimationHideDuration;
+
+			setTimeout(() => {
+				this.panelTransition(nextPanelIndex);
+			}, delay);
+			this.#currentPanelIndex = nextPanelIndex;
+		};
+
+		// Panel action wrapper functions
+		let panelActionShowExec = (panel, panelIndex, customDelay) => {
+			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
+					delay;
+			if (customDelay !== undefined)
+				delay = customDelay;
+			else
+				delay = this.panelAnimationDelay * 1000;
+
+			setTimeout(() => {
+				this.panelActionShow(panel, panelIndex, isHighVelocity);
+			}, delay);
+		};
+		let panelActionHideExec = (panel, panelIndex) => {
+			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold);
+			this.panelActionHide(panel, panelIndex, isHighVelocity);
+		};
 
 		// Define timeline
 		let timeline = gsap.timeline({
@@ -191,14 +228,14 @@ const FullishPage = class {
 				fastScrollEnd: this.fastScrollThreshold,
 				// Complete timeline for the first panel
 				onEnter: () => {
-					this.panelActionShowExec.bind(this, this.#fpPanels[0], 0, 0); // Zero delay
+					panelActionShowExec.bind(this, this.#fpPanels[0], 0, 0); // Zero delay
 				},
 				// Complete timeline for the last panel
 				// (fallback in case the last panel was not displayed in the last time scroll left the trigger)
 				onEnterBack: () => {
 					let lastIndex = this.#fpPanels.length - 1;
-					this.panelTransitionExec.bind(this, lastIndex, 0); // Zero delay
-					this.panelActionShowExec.bind(this, this.#fpPanels[lastIndex], lastIndex, this.panelTransitionDuration);
+					panelTransitionExec.bind(this, lastIndex, 0); // Zero delay
+					panelActionShowExec.bind(this, this.#fpPanels[lastIndex], lastIndex, this.panelTransitionDuration);
 				},
 			}
 		});
@@ -211,9 +248,9 @@ const FullishPage = class {
 			// NOTE: The first panel's initial `panelActionShowExec` is covered in `scrollTrigger.onEnter`
 			if (i > 0) {
 				timeline.set(null, {
-					onComplete: this.panelActionShowExec.bind(this),
+					onComplete: panelActionShowExec.bind(this),
 					onCompleteParams: [panel, i],
-					onReverseComplete: this.panelActionHideExec.bind(this),
+					onReverseComplete: panelActionHideExec.bind(this),
 					onReverseCompleteParams: [panel, i],
 				});
 			}
@@ -225,9 +262,9 @@ const FullishPage = class {
 			if (i < panels.length - 1) { // Not the last panel
 				// Panel action (hide|show)
 				timeline.set(null, {
-					onComplete: this.panelActionHideExec.bind(this),
+					onComplete: panelActionHideExec.bind(this),
 					onCompleteParams: [panel, i],
-					onReverseComplete: this.panelActionShowExec.bind(this),
+					onReverseComplete: panelActionShowExec.bind(this),
 					onReverseCompleteParams: [panel, i],
 				});
 
@@ -243,38 +280,6 @@ const FullishPage = class {
 
 		return timeline;
 	}
-
-	// Panel transition wrapper function
-	panelTransitionExec(nextPanelIndex, customDelay) {
-		let delay;
-		if (customDelay !== undefined)
-			delay = customDelay;
-		else
-			delay = this.panelAnimationHideDuration;
-
-		setTimeout(() => {
-			this.panelTransition(nextPanelIndex);
-		}, delay);
-		this.#currentPanelIndex = nextPanelIndex;
-	};
-
-	// Panel action wrapper functions
-	panelActionShowExec(panel, panelIndex, customDelay) {
-		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
-				delay;
-		if (customDelay !== undefined)
-			delay = customDelay;
-		else
-			delay = this.panelAnimationDelay * 1000;
-
-		setTimeout(() => {
-			this.panelActionShow(panel, panelIndex, isHighVelocity);
-		}, delay);
-	};
-	panelActionHideExec(panel, panelIndex) {
-		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold);
-		this.panelActionHide(panel, panelIndex, isHighVelocity);
-	};
 
 	destroy() {
 		this.beforeDestroy();
