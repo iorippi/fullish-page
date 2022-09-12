@@ -59,8 +59,6 @@ const FullishPage = class {
 				'panelTransition',
 				'panelActionShow',
 				'panelActionHide',
-				'onLeave',
-				'onEnter',
 				'beforeDestroy',
 				'afterDestroy',
 			].forEach(funcName => {
@@ -143,7 +141,7 @@ const FullishPage = class {
 			let panelTransitionHandler = (nextIndex) => {
 				clearTimeout(panelTransitionTimer);
 				panelTransitionTimer = setTimeout(() => {
-					this.panelTransition(nextIndex);
+					this.panelTransitionExec(nextIndex);
 				}, 100);
 			}
 
@@ -158,14 +156,14 @@ const FullishPage = class {
 					fastScrollEnd: this.fastScrollThreshold,
 					// Complete timeline for the first panel
 					onEnter: () => {
-						this.panelActionShow(this.fpPanels[0], 0, 0); // Zero delay
+						this.panelActionShowExec(this.fpPanels[0], 0, 0); // Zero delay
 					},
 					// Complete timeline for the last panel
 					// (fallback in case the last panel was not displayed in the last time scroll left the trigger)
 					onEnterBack: () => {
 						let lastIndex = this.fpPanels.length - 1;
-						this.panelTransition(lastIndex, 0); // Zero delay
-						this.panelActionShow(this.fpPanels[lastIndex], lastIndex, this.panelTransitionDuration);
+						this.panelTransitionExec(lastIndex, 0); // Zero delay
+						this.panelActionShowExec(this.fpPanels[lastIndex], lastIndex, this.panelTransitionDuration);
 					},
 				}
 			});
@@ -175,12 +173,12 @@ const FullishPage = class {
 				fullPage.addLabel("panel-" + i);
 
 				// Panel action (show|hide)
-				// NOTE: The first panel's initial `panelActionShow` is covered in `scrollTrigger.onEnter`
+				// NOTE: The first panel's initial `panelActionShowExec` is covered in `scrollTrigger.onEnter`
 				if (i > 0) {
 					fullPage.set(null, {
-						onComplete: this.panelActionShow.bind(this),
+						onComplete: this.panelActionShowExec.bind(this),
 						onCompleteParams: [panel, i],
-						onReverseComplete: this.panelActionHide.bind(this),
+						onReverseComplete: this.panelActionHideExec.bind(this),
 						onReverseCompleteParams: [panel, i],
 					});
 				}
@@ -188,13 +186,13 @@ const FullishPage = class {
 				// Panel free scroll
 				fullPage.to(null , { duration: 1 });
 
-				// NOTE: The last panel's `panelActionShow` on reverse is covered in `scrollTrigger.onEnterBack`
+				// NOTE: The last panel's `panelActionShowExec` on reverse is covered in `scrollTrigger.onEnterBack`
 				if (i < panels.length - 1) { // Not the last panel
 					// Panel action (hide|show)
 					fullPage.set(null, {
-						onComplete: this.panelActionHide.bind(this),
+						onComplete: this.panelActionHideExec.bind(this),
 						onCompleteParams: [panel, i],
-						onReverseComplete: this.panelActionShow.bind(this),
+						onReverseComplete: this.panelActionShowExec.bind(this),
 						onReverseCompleteParams: [panel, i],
 					});
 
@@ -222,6 +220,37 @@ const FullishPage = class {
 		// Finish setting mode
 		this.mode = mode;
 	}
+
+	panelTransitionExec(nextPanelIndex, customDelay) {
+		let delay;
+		if (customDelay !== undefined)
+			delay = customDelay;
+		else
+			delay = this.panelAnimationHideDuration;
+
+		setTimeout(() => {
+			this.panelTransition(nextPanelIndex);
+		}, delay);
+		this.currentPanelIndex = nextPanelIndex;
+	};
+
+	panelActionShowExec(panel, panelIndex, customDelay) {
+		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
+		    delay;
+		if (customDelay !== undefined)
+			delay = customDelay;
+		else
+			delay = this.panelAnimationDelay * 1000;
+
+		setTimeout(() => {
+			this.panelActionShow(panel, panelIndex, isHighVelocity);
+		}, delay);
+	};
+
+	panelActionHideExec(panel, panelIndex) {
+		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold);
+		this.panelActionHide(panel, panelIndex, isHighVelocity);
+	};
 
 	destroy() {
 		this.beforeDestroy();
@@ -290,15 +319,9 @@ const FullishPage = class {
 			return 'fullPage';
 	};
 
-	panelTransition(nextPanelIndex, customDelay) {
-		let delay;
-		if (customDelay !== undefined)
-			delay = customDelay;
-		else
-			delay = this.panelAnimationHideDuration;
-		setTimeout(() => {
-			 console.log(`Panel: transition ${this.currentPanelIndex} => ${nextPanelIndex}`);
-		}, delay * 1000);
+	panelTransition(nextPanelIndex) {
+		console.log(`Panel: transition ${this.currentPanelIndex} => ${nextPanelIndex}`);
+
 		let tl = gsap.timeline({ 
 			defaults: {
 				overwrite: true,
@@ -308,46 +331,30 @@ const FullishPage = class {
 		});
 		tl.to(this.fpPanels, {
 			autoAlpha: 0,
-		}, delay);
+		});
 		tl.to(this.fpPanels[nextPanelIndex], {
 			autoAlpha: 1,
 		}, "<");
-		this.currentPanelIndex = nextPanelIndex;
-	};
+	}
 
-	panelActionShow(panel, panelIndex, customDelay) {
-		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
-				direction = this.fullPage.scrollTrigger.direction,
-		    delay;
-		if (customDelay !== undefined)
-			delay = customDelay;
-		else
-			delay = this.panelAnimationDelay * 1000;
-		setTimeout(() => {
-			console.log(`Panel: action (show) ${panelIndex}, direction: ${direction}, isHighVelocity: ${isHighVelocity}`);
+	panelActionShow(panel, panelIndex, isHighVelocity) {
+		console.log(`Panel: action (show) ${panelIndex}`);
 
-			let p = gsap.utils.selector(panel);
-			gsap.to(p('h2'), {
-				fontSize: 100
-			});
+		let p = gsap.utils.selector(panel);
+		gsap.to(p('h2'), {
+			fontSize: 100
+		});
+	}
 
-		}, delay);
-	};
-
-	panelActionHide(panel, panelIndex) {
-		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
-				direction = this.fullPage.scrollTrigger.direction;
+	panelActionHide(panel, panelIndex, isHighVelocity) {
+		console.log(`Panel: action (hide) ${panelIndex}`);
 
 		let p = gsap.utils.selector(panel);
 		gsap.to(p('h2'), {
 			fontSize: 0
 		});
+	}
 
-		console.log(`Panel: action (hide) ${panelIndex}, direction: ${direction}, isHighVelocity: ${isHighVelocity}`);
-	};
-
-	onLeave(direction) {};
-	onEnter(direction) {};
 	beforeDestroy() {};
 	afterDestroy() {};
 };
