@@ -1,2 +1,4 @@
-const fp = new FullishPage();
+const fp = new FullishPage({
+	debug: true,
+});
 fp.init();
