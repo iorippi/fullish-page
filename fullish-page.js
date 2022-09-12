@@ -147,18 +147,34 @@ const FullishPage = class {
 					this.panelTransition(nextIndex);
 				}, 100);
 			}
+			let panelActionHandler = (func, firstOrLastPanel = false, panel, i) => {
+				let velocity = Math.abs(this.fullPage.scrollTrigger.getVelocity());
+				let direction = this.fullPage.scrollTrigger.direction;
+				if (firstOrLastPanel || velocity < this.fastScrollThreshold)
+					// TODO: conditionally set timeout
+					setTimeout(() => {
+						func(direction, panel, i);
+					}, this.panelTransitionDuration * 1000);
+			}
 
 			this.fpPanels.forEach((panel, i, panels) => {    
+				let firstOrLastPanel = (i === 0 || i === panels.length - 1);
 				fullPage.addLabel("panel-" + i);
 
-				// Panel action (show)
-				fullPage.call(this.beforePanelTransition.bind(this), [panel, i, panels]);
+				// Panel action (before)
+				fullPage.call(
+					panelActionHandler.bind(this),
+					[this.beforePanelTransition, firstOrLastPanel, panel, i],
+				);
 
 				// Panel free scroll
 				fullPage.to(null , { duration: 1 });
 
-				// Panel action (hide)
-				fullPage.call(this.afterPanelTransition.bind(this), [panel, i, panels]);
+				// Panel action (after)
+				fullPage.call(
+					panelActionHandler.bind(this),
+					[this.afterPanelTransition, firstOrLastPanel, panel, i],
+				);
 
 				// Panel transition
 				if (i < panels.length - 1) { // not the last panel
@@ -250,11 +266,11 @@ const FullishPage = class {
 		else
 			return 'fullPage';
 	};
-	beforePanelTransition(panel, panelIndex, panels) {
-		let velocity = Math.abs(this.fullPage.scrollTrigger.getVelocity());
-		if (velocity < this.fastScrollThreshold)
-			console.log(`Panel: action (before) ${panelIndex}`);
+
+	beforePanelTransition(direction, panel, panelIndex) {
+		console.log(`Panel: action (before) ${panelIndex}, direction: ${direction}`);
 	};
+
 	panelTransition(nextPanelIndex) {
 		gsap.to(this.fpPanels, {
 			overwrite: true,
@@ -268,11 +284,11 @@ const FullishPage = class {
 		});
 		this.currentPanelIndex = nextPanelIndex;
 	};
-	afterPanelTransition(panel, panelIndex, panels) {
-		let velocity = Math.abs(this.fullPage.scrollTrigger.getVelocity());
-		if (velocity < this.fastScrollThreshold)
-			console.log(`Panel: action (after) ${panelIndex}`);
+
+	afterPanelTransition(direction, panel, panelIndex) {
+		console.log(`Panel: action (after) ${panelIndex}, direction: ${direction}`);
 	};
+
 	onLeave(direction) {};
 	onEnter(direction) {};
 	beforeDestroy() {};
