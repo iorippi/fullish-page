@@ -40,10 +40,12 @@ const FullishPage = class {
 	#fpPanels;
 	#currentPanelIndex;
 	#currentScreenWidth;
+	#defaults;
+	#config;
 
 	constructor(config = {}) {
 		// Configurable variables
-		Object.entries({
+		this.#defaults = {
 				selector: '.fullish-page',
 				panelDepth: 1, // 1 = 100vh
 				// Default:
@@ -58,22 +60,26 @@ const FullishPage = class {
 				nextButton: '.fullish-page-next', // TODO: Implement feature
 				prevButton: '.fullish-page-prev', // TODO: Implement feature
 				debug: false,
-			}).forEach(entry => {
-				this[entry[0]] = config[entry[0]] ? config[entry[0]] : entry[1];
-			});
+		};
+		// Set configuration (override defaults)
+		this.#config = {};
+		Object.entries(this.#defaults).forEach(entry => {
+			this.#config[entry[0]] = config[entry[0]] ? config[entry[0]] : entry[1];
+		});
+
 		// Configurable methods
 		[
-				'beforeInit',
-				'afterInit',
-				'defineMode',
-				'panelTransition',
-				'panelActionShow',
-				'panelActionHide',
-				'beforeDestroy',
-				'afterDestroy',
-			].forEach(funcName => {
-				this[funcName] = config[funcName] ? config[funcName] : this[funcName];
-			});
+			'beforeInit',
+			'afterInit',
+			'defineMode',
+			'panelTransition',
+			'panelActionShow',
+			'panelActionHide',
+			'beforeDestroy',
+			'afterDestroy',
+		].forEach(funcName => {
+			this[funcName] = config[funcName] ? config[funcName] : this[funcName];
+		});
 
 		// Set variables
 		this.#modes = ['fullPage', 'static'];
@@ -81,14 +87,18 @@ const FullishPage = class {
 		this.#initialized = false;
 		this.#currentPanelIndex = null;
 		this.#currentScreenWidth = null;
-		this.#fpContainer = document.querySelector(this.selector);
-		this.#fpWrapper = document.querySelector(this.selector + ' > .fullish-page-wrapper');
-		this.#fpPanels = gsap.utils.toArray(document.querySelectorAll(this.selector + ' > .fullish-page-wrapper > .panel'));
+		this.#fpContainer = document.querySelector(this.#config.selector);
+		this.#fpWrapper = document.querySelector(this.#config.selector + ' > .fullish-page-wrapper');
+		this.#fpPanels = gsap.utils.toArray(document.querySelectorAll(this.#config.selector + ' > .fullish-page-wrapper > .panel'));
 		this.fullPage = null; // GSAP timeline handler for full-page mode
 	}
 
 	log(...params) {
-		if (this.debug) console.log(...params);
+		if (this.#config.debug) console.log(...params);
+	}
+
+	get config() {
+		return this#config,
 	}
 
 	get props() {
@@ -140,7 +150,7 @@ const FullishPage = class {
 		this.afterInit(resized);
 	}
 
-	setMode(mode, debug = false) {
+	setMode(mode) {
 		// Check the parameter before execution.
 		try {
 			if (!this.#modes.includes(mode))
@@ -171,7 +181,7 @@ const FullishPage = class {
 
 		// Set height of container to the total scroll height of all panels
 		gsap.set(this.#fpContainer, {
-			height: (this.#fpPanels.length * this.panelDepth * 100) + "vh",
+			height: (this.#fpPanels.length * this.#config.panelDepth * 100) + "vh",
 		});
 
 		// Transition animation helper:
@@ -191,7 +201,7 @@ const FullishPage = class {
 			if (customDelay !== undefined)
 				delay = customDelay;
 			else
-				delay = this.panelAnimationHideDuration;
+				delay = this.#config.panelAnimationHideDuration;
 
 			setTimeout(() => {
 				this.panelTransition(nextPanelIndex);
@@ -201,31 +211,31 @@ const FullishPage = class {
 
 		// Panel action wrapper functions
 		let panelActionShowExec = (panel, panelIndex, customDelay) => {
-			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
+			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.#config.fastScrollThreshold),
 					delay;
 			if (customDelay !== undefined)
 				delay = customDelay;
 			else
-				delay = this.panelAnimationDelay * 1000;
+				delay = this.#config.panelAnimationDelay * 1000;
 
 			setTimeout(() => {
 				this.panelActionShow(panel, panelIndex, isHighVelocity);
 			}, delay);
 		};
 		let panelActionHideExec = (panel, panelIndex) => {
-			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold);
+			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.#config.fastScrollThreshold);
 			this.panelActionHide(panel, panelIndex, isHighVelocity);
 		};
 
 		// Define timeline
 		let timeline = gsap.timeline({
 			scrollTrigger: {
-				markers: this.debug,
+				markers: this.#config.debug,
 				trigger: this.#fpContainer,
-				start: this.triggerStart,
-				end: this.triggerEnd,
+				start: this.#config.triggerStart,
+				end: this.#config.triggerEnd,
 				scrub: true,
-				fastScrollEnd: this.fastScrollThreshold,
+				fastScrollEnd: this.#config.fastScrollThreshold,
 				// Complete timeline for the first panel
 				onEnter: () => {
 					panelActionShowExec.bind(this, this.#fpPanels[0], 0, 0); // Zero delay
@@ -235,7 +245,7 @@ const FullishPage = class {
 				onEnterBack: () => {
 					let lastIndex = this.#fpPanels.length - 1;
 					panelTransitionExec.bind(this, lastIndex, 0); // Zero delay
-					panelActionShowExec.bind(this, this.#fpPanels[lastIndex], lastIndex, this.panelTransitionDuration);
+					panelActionShowExec.bind(this, this.#fpPanels[lastIndex], lastIndex, this.#config.panelTransitionDuration);
 				},
 			}
 		});
@@ -360,7 +370,7 @@ const FullishPage = class {
 		let tl = gsap.timeline({ 
 			defaults: {
 				overwrite: true,
-				duration: this.panelTransitionDuration,
+				duration: this.#config.panelTransitionDuration,
 				ease: "none",
 			}
 		});
