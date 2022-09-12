@@ -36,8 +36,11 @@ const FullishPage = class {
 		// Configurable variables
 		Object.entries({
 				fpContainerSel: '.fullish-page',
-				panelDepth: 0.5, // TODO: Do I need this?
-				duration: 1,
+				panelDepth: 1, // 1 = 100vh
+				panelTransitionDuration: 1, // seconds
+				fastScrollThreshold: 2500, // pixels per second
+				triggerStart: "top top",
+				triggerEnd: "bottom bottom",
 			}).forEach(e => {
 				this[e[0]] = config[e[0]] ? config[e[0]] : e[1];
 			});
@@ -48,7 +51,6 @@ const FullishPage = class {
 				'defineMode',
 				'beforePanelTransition',
 				'panelTransition',
-				'panelAnimation',
 				'afterPanelTransition',
 				'onLeave',
 				'onEnter',
@@ -67,6 +69,7 @@ const FullishPage = class {
 		this.fpPanels = gsap.utils.toArray(document.querySelectorAll(this.fpContainerSel + ' > .fullish-page-wrapper > .panel'));
 		this.currentPanelIndex = null;
 		this.currentScreenWidth = null;
+		this.fullPage = null; // GSAP timeline handler for full-page mode
 	}
 
 	/*
@@ -107,7 +110,7 @@ const FullishPage = class {
 		this.afterInit(resized);
 	}
 
-	setMode(mode) {
+	setMode(mode, debug = false) {
 		// Check the parameter before execution.
 		try {
 			if (!this.modes.includes(mode))
@@ -125,7 +128,59 @@ const FullishPage = class {
 			gsap.set(this.fpContainer, {
 				height: (this.fpPanels.length * this.panelDepth * 100) + "vh",
 			});
+
+			let fullPage = gsap.timeline({
+				scrollTrigger: {
+					markers: debug,
+					trigger: this.fpContainer,
+					start: this.triggerStart,
+					end: this.triggerEnd,
+					scrub: true,
+					fastScrollEnd: this.fastScrollThreshold,
+				}
+			});
+
+			let panelTransitionTimer;
+			let panelTransitionHandler = (nextIndex) => {
+				clearTimeout(panelTransitionTimer);
+				panelTransitionTimer = setTimeout(() => {
+					this.panelTransition(nextIndex);
+				}, 100);
+			}
+
+			this.fpPanels.forEach((panel, i, panels) => {    
+				fullPage.addLabel("panel-" + i);
+
+				// Panel action (show)
+				// NOTE: Adding minimum duration tween as a workaround for GSAP spec.
+				//       Zero duration tween at the beginning of timeline 
+				//       including .to[onComplete], .set and .call won't be executed
+				//       upon the positive direciton scroll 2nd time and later.
+				let durationPadding = 1 / 1000000000;
+				fullPage.to(null, { duration: durationPadding });
+				fullPage.call(this.beforePanelTransition.bind(this), [panel, i, panels]);
+
+				// Panel free scroll
+				fullPage.to(null , { duration: 1 });
+
+				// Panel action (hide)
+				fullPage.call(this.afterPanelTransition.bind(this), [panel, i, panels]);
+
+				// Panel transition
+				if (i < panels.length - 1) { // not the last panel
+					fullPage.set(fp.fpContainer, {
+						onComplete: panelTransitionHandler.bind(this),
+						onCompleteParams: [i + 1],
+						onReverseComplete: panelTransitionHandler.bind(this),
+						onReverseCompleteParams: [i],
+					});
+				}
+			});
+
 			this.fpContainer.classList.add('fp-mode-full-page');
+
+			this.fullPage = fullPage;
+
 		} else if (mode === 'static') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'static');
 			console.info('[FullishPage.setMode] Setting static mode.'); // TODO
@@ -142,6 +197,7 @@ const FullishPage = class {
 
 		this.fpContainer.classList.remove('fp-mode-full-page', 'fp-mode-static');
 		// TODO: remove GSAP ScrollTrigger here.
+		this.fullPage.kill();
 
 		window.removeEventListener('resize', this.onResize);
 
@@ -193,22 +249,29 @@ const FullishPage = class {
 		else
 			return 'fullPage';
 	};
-	beforePanelTransition(currentPanel, currentPanelIndex, direction, newPanel, newPanelIndex) {};
-	panelTransition(targetPanel, targetState, direction, skipAnimation) {
-		if (targetState) { // 表示アニメーション
-			gsap.to(newPanel, {
-				autoAlpha: 1,
-				duration: this.config.duration
-			});
-		} else { // 非表示アニメーション
-			gsap.to(currentPanel, {
-				autoAlpha: 0,
-				duration: this.config.duration
-			});
-		}
+	beforePanelTransition(panel, panelIndex, panels) {
+		let velocity = Math.abs(this.fullPage.scrollTrigger.getVelocity());
+		if (velocity < this.fastScrollThreshold)
+			console.log(`Panel: action (before) ${panelIndex}`);
 	};
-	panelAnimation(targetPanel, targetState, direction, skipAnimation) {};
-	afterPanelTransition(currentPanel, currentPanelIndex, direction) {};
+	panelTransition(nextPanelIndex) {
+		gsap.to(this.fpPanels, {
+			overwrite: true,
+			autoAlpha: 0,
+			duration: this.panelTransitionDuration,
+		});
+		gsap.to(this.fpPanels[nextPanelIndex], {
+			overwrite: true,
+			autoAlpha: 1,
+			duration: this.panelTransitionDuration,
+		});
+		this.currentPanelIndex = nextPanelIndex;
+	};
+	afterPanelTransition(panel, panelIndex, panels) {
+		let velocity = Math.abs(this.fullPage.scrollTrigger.getVelocity());
+		if (velocity < this.fastScrollThreshold)
+			console.log(`Panel: action (after) ${panelIndex}`);
+	};
 	onLeave(direction) {};
 	onEnter(direction) {};
 	beforeDestroy() {};
