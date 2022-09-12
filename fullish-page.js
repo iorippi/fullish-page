@@ -38,6 +38,7 @@ const FullishPage = class {
 				fpContainerSel: '.fullish-page',
 				panelDepth: 1, // 1 = 100vh
 				panelTransitionDuration: 1, // seconds
+				panelAnimationHideDuration: 1, // seconds
 				fastScrollThreshold: 2500, // pixels per second
 				triggerStart: "top top",
 				triggerEnd: "bottom bottom",
@@ -49,9 +50,9 @@ const FullishPage = class {
 				'beforeInit',
 				'afterInit',
 				'defineMode',
-				'beforePanelTransition',
 				'panelTransition',
-				'afterPanelTransition',
+				'panelActionShow',
+				'panelActionHide',
 				'onLeave',
 				'onEnter',
 				'beforeDestroy',
@@ -137,6 +138,16 @@ const FullishPage = class {
 					end: this.triggerEnd,
 					scrub: true,
 					fastScrollEnd: this.fastScrollThreshold,
+					// Complete timeline for the first panel
+					onEnter: () => {
+						this.panelActionShow(this.fpPanels[0], 0, this.panelTransitionDuration); 
+					},
+					// Complete timeline for the last panel
+					onEnterBack: () => {
+						let lastIndex = this.fpPanels.length - 1;
+						this.panelTransition(lastIndex);
+						this.panelActionShow(this.fpPanels[lastIndex], lastIndex, this.panelTransitionDuration); 
+					},
 				}
 			});
 
@@ -147,37 +158,35 @@ const FullishPage = class {
 					this.panelTransition(nextIndex);
 				}, 100);
 			}
-			let panelActionHandler = (func, firstOrLastPanel = false, panel, i) => {
-				let velocity = Math.abs(this.fullPage.scrollTrigger.getVelocity());
-				let direction = this.fullPage.scrollTrigger.direction;
-				if (firstOrLastPanel || velocity < this.fastScrollThreshold)
-					// TODO: conditionally set timeout
-					setTimeout(() => {
-						func(direction, panel, i);
-					}, this.panelTransitionDuration * 1000);
-			}
 
 			this.fpPanels.forEach((panel, i, panels) => {    
-				let firstOrLastPanel = (i === 0 || i === panels.length - 1);
 				fullPage.addLabel("panel-" + i);
 
-				// Panel action (before)
-				fullPage.call(
-					panelActionHandler.bind(this),
-					[this.beforePanelTransition, firstOrLastPanel, panel, i],
-				);
+				// Panel action (show|hide)
+				// NOTE: The first panel's initial `panelActionShow` is covered in `scrollTrigger.onEnter`
+				if (i > 0) {
+					fullPage.set(null, {
+						onComplete: this.panelActionShow.bind(this),
+						onCompleteParams: [panel, i],
+						onReverseComplete: this.panelActionHide.bind(this),
+						onReverseCompleteParams: [panel, i],
+					});
+				}
 
 				// Panel free scroll
 				fullPage.to(null , { duration: 1 });
 
-				// Panel action (after)
-				fullPage.call(
-					panelActionHandler.bind(this),
-					[this.afterPanelTransition, firstOrLastPanel, panel, i],
-				);
+				// NOTE: The last panel's `panelActionShow` on reverse is covered in `scrollTrigger.onEnterBack`
+				if (i < panels.length - 1) { // Not the last panel
+					// Panel action (hide|show)
+					fullPage.set(null, {
+						onComplete: this.panelActionHide.bind(this),
+						onCompleteParams: [panel, i],
+						onReverseComplete: this.panelActionShow.bind(this),
+						onReverseCompleteParams: [panel, i],
+					});
 
-				// Panel transition
-				if (i < panels.length - 1) { // not the last panel
+					// Panel transition
 					fullPage.set(null, {
 						onComplete: panelTransitionHandler.bind(this),
 						onCompleteParams: [i + 1],
@@ -187,9 +196,9 @@ const FullishPage = class {
 				}
 			});
 
-			this.fpContainer.classList.add('fp-mode-full-page');
-
+			this.currentPanelIndex = 0;
 			this.fullPage = fullPage;
+			this.fpContainer.classList.add('fp-mode-full-page');
 
 		} else if (mode === 'static') {
 			this.fpContainer.setAttribute('data-fullish-page-mode', 'static');
@@ -267,26 +276,54 @@ const FullishPage = class {
 			return 'fullPage';
 	};
 
-	beforePanelTransition(direction, panel, panelIndex) {
-		console.log(`Panel: action (before) ${panelIndex}, direction: ${direction}`);
-	};
-
 	panelTransition(nextPanelIndex) {
-		gsap.to(this.fpPanels, {
-			overwrite: true,
+		setTimeout(() => {
+			 console.log(`Panel: transition ${this.currentPanelIndex} => ${nextPanelIndex}`);
+		}, this.panelAnimationHideDuration);
+		let tl = gsap.timeline({ 
+			defaults: {
+				overwrite: true,
+				duration: this.panelTransitionDuration,
+			}
+		});
+		tl.to(this.fpPanels, {
 			autoAlpha: 0,
-			duration: this.panelTransitionDuration,
-		});
-		gsap.to(this.fpPanels[nextPanelIndex], {
-			overwrite: true,
+		}, this.panelAnimationHideDuration);
+		tl.to(this.fpPanels[nextPanelIndex], {
 			autoAlpha: 1,
-			duration: this.panelTransitionDuration,
-		});
+		}, "<");
 		this.currentPanelIndex = nextPanelIndex;
 	};
 
-	afterPanelTransition(direction, panel, panelIndex) {
-		console.log(`Panel: action (after) ${panelIndex}, direction: ${direction}`);
+	panelActionShow(panel, panelIndex, immediate = false) {
+		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
+				direction = this.fullPage.scrollTrigger.direction,
+		    delay;
+		if (immediate)
+			delay = 0;
+		else
+			delay = (this.panelTransitionDuration + this.panelAnimationHideDuration) * 1000;
+		setTimeout(() => {
+			console.log(`Panel: action (show) ${panelIndex}, direction: ${direction}, isHighVelocity: ${isHighVelocity}`);
+
+			let p = gsap.utils.selector(panel);
+			gsap.to(p('h2'), {
+				fontSize: 100
+			});
+
+		}, delay);
+	};
+
+	panelActionHide(panel, panelIndex) {
+		let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.fastScrollThreshold),
+				direction = this.fullPage.scrollTrigger.direction;
+
+		let p = gsap.utils.selector(panel);
+		gsap.to(p('h2'), {
+			fontSize: 0
+		});
+
+		console.log(`Panel: action (hide) ${panelIndex}, direction: ${direction}, isHighVelocity: ${isHighVelocity}`);
 	};
 
 	onLeave(direction) {};
