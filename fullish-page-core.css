@@ -19,9 +19,11 @@
   position: relative;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
-.fullish-page .panel .panel-container {
+.fullish-page .panel-container {
   display: block;
+  width: 100%;
 }
 
 /*

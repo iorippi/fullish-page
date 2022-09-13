@@ -21,9 +21,13 @@
 		position: relative;
 		justify-content: center;
 		align-items: center;
-		.panel-container {
-			display: block;
-		}
+
+		padding: 20px;
+	}
+
+	.panel-container {
+		display: block;
+		width: 100%;
 	}
 }
 
