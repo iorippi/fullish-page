@@ -16,6 +16,7 @@
 }
 .fullish-page .panel {
   display: flex;
+  position: relative;
   justify-content: center;
   align-items: center;
 }
