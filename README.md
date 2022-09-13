@@ -14,8 +14,6 @@ This combines a few unconventional combination:
 
 Note that if any of the above is not desirable to you, there are numerous conventional plugin and solutions provided there. This plugin is aimed to solve the specific edge case solution.
 
-Here's a few other merits
-
 
 ## How to use
 
