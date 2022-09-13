@@ -50,6 +50,7 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow: hidden;
 }
 .fullish-page[data-fullish-page-mode=full-page] .panel, .fullish-page.fp-mode-full-page .panel {
   position: absolute;
