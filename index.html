@@ -7,6 +7,9 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.css" media="all">
 	<link rel="stylesheet" href="./fullish-page-core.css" media="all">
 	<link rel="stylesheet" href="./style.css" media="all">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/ScrollTrigger.min.js"></script>
+	<script src="./fullish-page.js"></script>
 </head>
 <body>
 
@@ -55,15 +58,18 @@
 		</section>
 </main>
 
+<script>
+	const fp = new FullishPage({
+		debug: true,
+	});
+	fp.init();
+</script>
+
 <div class="spacer"></div>
 
 <footer>
 	&copy;2022 iorippi
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js" id="gsap-core-js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/ScrollTrigger.min.js" id="gsap-scrolltrigger-js"></script>
-<script src="./fullish-page.js" id="fullish-page-js"></script>
-<script src="./index.js" id="index-js"></script>
 </body>
 </html>
