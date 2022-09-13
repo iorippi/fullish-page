@@ -1,32 +1,9 @@
-/*
+/* -------------------------------------- *
  * Fullish-Page
- * - FullPage x GSAP ScrollTrigger (パネル・フェード型)
- *
- * GSAP プラグインを使用した全画面カルーセル。
- * 通常フローのページ中に FullPage 領域を設ける際に使用可能。
- * コンテンツとビューポートのサイズを比較し、
- * フルページ表示と通常の表示を自動で切り替える。
- *
- * # メリット：
- * - Panel が変わる瞬間のアニメーションを固定可能（深度とアニメーションの進行を同期させる場合はこのプラグインは使用不可）
- * 
- * # 対応している動き：
- * - 画面領域を覆うパネル間をフェードイン・アウトで行き来する遷移
- *   （前後のパネルが重なって表示される必要がある場合に対応。）
- * - FullPage 領域の前後の通常スクロールのフローを維持したい場合にも対応
- *
- * # 対応していない動き：
- * - パネルが上下方向にスライドしていくタイプの遷移
- * - 複数のパネルで区切らずに流動的なアニメーションで再現する遷移
- *
- * # 使用方法
- * ```
- * const fp = new FullPage({config}); 
- * fp.init();
- * ```
+ * Responsive FullPage plugin (for GSAP)
  *
  * 2022 Iori Tatsuguchi
- */
+ * -------------------------------------- */
 
 // Register dependency GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -47,14 +24,11 @@ const FullishPage = class {
 		// Configurable variables
 		this.#defaults = {
 				selector: '.fullish-page',
-				panelDepth: 1, // 1 = 100vh
-				// Default:
-				// panelAnimationDelay = panelTransitionDuration + panelAnimationHideDuration
-				// -> Animation will start after both of the previous panel action (hide) and panel transition has finished
-				panelTransitionDuration: 0.5, // seconds
-				panelAnimationHideDuration: 0.5, // seconds
-				panelAnimationDelay: 1, // seconds: 
-				fastScrollThreshold: 2500, // pixels per second
+				panelDepth: 1,
+				panelTransitionDuration: 0.5,
+				panelAnimationHideDuration: 0.5,
+				panelAnimationDelay: 1,
+				fastScrollThreshold: 2500,
 				triggerStart: "top top",
 				triggerEnd: "bottom bottom",
 				buttonNext: '.fullish-page-button-next', // TODO: Implement feature
