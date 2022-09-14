@@ -25,7 +25,7 @@ const FullishPage = class {
 		this.#defaults = {
 				selector: '.fullish-page',
 				panelDepth: 1,
-				scrollWait: 1,
+				scrollWait: 0.1,
 				panelTransitionDuration: 0.5,
 				panelAnimationHideDuration: 0.5,
 				panelAnimationDelay: 1,
@@ -167,7 +167,7 @@ const FullishPage = class {
 			clearTimeout(panelTransitionTimer);
 			panelTransitionTimer = setTimeout(() => {
 				panelTransitionExec(nextIndex);
-			}, 100);
+			}, this.#config.scrollWait * 1000);
 		}
 
 		// Panel transition wrapper function
