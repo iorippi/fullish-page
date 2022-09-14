@@ -31,16 +31,20 @@ fp.init();
 
 ## Settings
 
-| **Methods**  | **Argument**     | **Description**                                                                                                     |
-|--------------|------------------|---------------------------------------------------------------------------------------------------------------------|
-| config       |                  | Returns currently configured variables                                                                              |
-| props        |                  | Returns various internal properties such as element objects for container, each panels, current index of the panel. |
-| onResize     |                  | Function to be executed upon browser resize event                                                                   |
-| setMode      |                  | Set mode (either `fullPage` or `static`)                                                                            |
-| destroy      |                  | Undo initialization                                                                                                 |
-| scrollTo     | targetPanelIndex | Scroll to the panel designated by index. (Count starts from 0)                                                      |
-| scrollToNext |                  | Scroll to a next panel of the current panel                                                                         |
-| scrollToPrev |                  | Scroll to a previous of the current panel                                                                           |
+| **Option**                 | **Type** | **Default**       | **Description**                                                                                                                                                                    |
+|----------------------------|----------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| selector                   | string   | .fullish-page'    | Container's selector                                                                                                                                                               |
+| panelDepth                 | integer  |                 1 | [Full-Page mode only] Each panel's scroll depth. (1 = 100vh)                                                                                                                       |
+| scrollWait                 | integer  |                 1 | [Full-Page mode only] Scroll smoothing wait time                                                                                                                                   |
+| panelTransitionDuration    | integer  |               0.5 | [Full-Page mode only] Duration for panel-to-panel transition animation. (in seconds) Must equal to `panelAnimationDelay - panelAnimationHideDuration`.                             |
+| panelAnimationHideDuration | integer  |               0.5 | [Full-Page mode only] Duration for panel hiding animation. (in seconds) Must equal to `panelAnimationDelay - panelTransitionDuration`.                                             |
+| panelAnimationDelay        | integer  |                 1 | [Full-Page mode only] Delay for panel showing animation. (in seconds) Must equal to `panelAnimationHideDuration + panelTransitionDuration`.                                        |
+| fastScrollThreshold        | integer  |              2500 | Threshold for triggering `fastScroll` for GSAP ScrollTrigger and other animations to skip in case the speed was above the threshold. (pixels per second)                           |
+| triggerStart               | string   | top top,          | GSAP ScrollTrigger `start` variable. [Refer to official document for the specification (Usage & special properties: `start`)](https://greensock.com/docs/v3/Plugins/ScrollTrigger) |
+| triggerEnd                 | string   | bottom bottom,    | GSAP ScrollTrigger `end` variable. [Refer to official document for the specification (Usage & special properties: `end`)](https://greensock.com/docs/v3/Plugins/ScrollTrigger)     |
+| buttonNext                 | string   | Implement feature | [TODO] Selector for next panel button                                                                                                                                              |
+| buttonPrev                 | string   | Implement feature | [TODO] Selector for previous panel button                                                                                                                                          |
+| debug                      | boolean  |       FALSE       | Debug flag. If set to `true`, it enables console output as well as GSAP ScrollTrigger's debugging feature.                                                                         |
 
 
 ## Configurable Methods
@@ -68,6 +72,7 @@ fp.init();
 | scrollTo     | targetPanelIndex | Scroll to the panel designated by index. (Count starts from 0)                                                      |
 | scrollToNext |                  | Scroll to a next panel of the current panel                                                                         |
 | scrollToPrev |                  | Scroll to a previous of the current panel                                                                           |
+
 
 
 ## Styling
