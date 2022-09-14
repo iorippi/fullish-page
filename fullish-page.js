@@ -66,6 +66,9 @@ const FullishPage = class {
 		this.#fpWrapper = document.querySelector(this.#config.selector + ' > .fullish-page-wrapper');
 		this.#fpPanels = gsap.utils.toArray(document.querySelectorAll(this.#config.selector + ' > .fullish-page-wrapper > .panel'));
 		this.fullPage = null; // GSAP timeline handler for full-page mode
+
+		// Initialize scrollKiller
+		this.constructor.scrollKiller.init();	
 	}
 
 	log(...params) {
@@ -164,6 +167,9 @@ const FullishPage = class {
 		// to prevent panels in between the current and the target panel appearing mid-transition
 		let panelTransitionTimer;
 		let panelTransitionHandler = (nextIndex) => {
+			// Kill scrolling until show animation is triggered
+			FullishPage.scrollKiller.disableScroll();
+
 			clearTimeout(panelTransitionTimer);
 			panelTransitionTimer = setTimeout(() => {
 				panelTransitionExec(nextIndex);
@@ -195,6 +201,11 @@ const FullishPage = class {
 
 			setTimeout(() => {
 				this.panelActionShow(panel, panelIndex, isHighVelocity);
+
+				// Enable scroll again
+				setTimeout(() => {
+					FullishPage.scrollKiller.enableScroll();
+				}, this.#config.panelAnimationDelay);
 			}, delay);
 		};
 		let panelActionHideExec = (panel, panelIndex) => {
@@ -315,6 +326,62 @@ const FullishPage = class {
 
 	scrollToPrev() {
 		this.scrollTo(this.#currentPanelIndex - 1);
+	}
+
+	static scrollKiller = {
+		// @gblazex
+		// https://stackoverflow.com/a/4770179
+
+		// left: 37, up: 38, right: 39, down: 40,
+		// spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
+		keys: {
+			37: 1, 38: 1, 39: 1, 40: 1,
+			32: 1, 33: 1, 34: 1, 35: 1, 36: 1,
+		},
+
+		preventDefault(e) {
+			e.preventDefault();
+		},
+
+		preventDefaultForScrollKeys(e) {
+			if (this.keys[e.keyCode]) {
+				this.preventDefault(e);
+				return false;
+			}
+		},
+
+		wheelOpt: undefined,
+		wheelEvent: undefined,
+
+		init() {
+			// modern Chrome requires { passive: false } when adding event
+			let supportsPassive = false;
+
+			try {
+				window.addEventListener("test", null, Object.defineProperty({}, 'passive', {
+					get: function () { supportsPassive = true; } 
+				}));
+			} catch(e) {}
+
+			this.wheelOpt = supportsPassive ? { passive: false } : false;
+			this.wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
+		},
+
+		// call this to Disable
+		disableScroll() {
+			window.addEventListener('DOMMouseScroll', this.preventDefault, false); // older FF
+			window.addEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); // modern desktop
+			window.addEventListener('touchmove', this.preventDefault, this.wheelOpt); // mobile
+			window.addEventListener('keydown', this.preventDefaultForScrollKeys, false);
+		},
+
+		// call this to Enable
+		enableScroll() {
+			window.removeEventListener('DOMMouseScroll', this.preventDefault, false);
+			window.removeEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); 
+			window.removeEventListener('touchmove', this.preventDefault, this.wheelOpt);
+			window.removeEventListener('keydown', this.preventDefaultForScrollKeys, false);
+		}
 	}
 
 	/* 
