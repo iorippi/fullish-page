@@ -119,6 +119,10 @@ const FullishPage = class {
 
 		// TODO: Disable scroll depth history; maybe make it configurable?
 
+		this.#fpPanels.forEach((panel, i) => {
+			panel.classList.add('panel-' + i);
+		});
+
 		// Set mode to either 'fullPage' or 'static'
 		this.setMode(this.defineMode());
 
