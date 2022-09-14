@@ -25,6 +25,7 @@ const FullishPage = class {
 		this.#defaults = {
 				selector: '.fullish-page',
 				panelDepth: 1,
+				scrollWait: 1,
 				panelTransitionDuration: 0.5,
 				panelAnimationHideDuration: 0.5,
 				panelAnimationDelay: 1,
@@ -208,7 +209,7 @@ const FullishPage = class {
 				trigger: this.#fpContainer,
 				start: this.#config.triggerStart,
 				end: this.#config.triggerEnd,
-				scrub: true,
+				scrub: this.#config.scrollWait,
 				fastScrollEnd: this.#config.fastScrollThreshold,
 				// Complete timeline for the first panel
 				onEnter: () => {
