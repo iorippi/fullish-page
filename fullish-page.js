@@ -175,7 +175,7 @@ const FullishPage = class {
 			if (customDelay !== undefined)
 				delay = customDelay;
 			else
-				delay = this.#config.panelAnimationHideDuration;
+				delay = this.#config.panelAnimationHideDuration * 1000;
 
 			setTimeout(() => {
 				this.panelTransition(nextPanelIndex);
