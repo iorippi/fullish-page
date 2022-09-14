@@ -26,9 +26,10 @@ const FullishPage = class {
 				selector: '.fullish-page',
 				panelDepth: 1,
 				scrollWait: 0.1,
-				panelTransitionDuration: 0.5,
-				panelAnimationHideDuration: 0.5,
-				panelAnimationDelay: 1,
+				panelTransitionDuration: 1,
+				panelAnimationHideDuration: 1,
+				panelAnimationDelay: 2,
+				panelAnimationShowDuration: 1,
 				fastScrollThreshold: 2500,
 				triggerStart: "top top",
 				triggerEnd: "bottom bottom",
@@ -167,11 +168,11 @@ const FullishPage = class {
 		// to prevent panels in between the current and the target panel appearing mid-transition
 		let panelTransitionTimer;
 		let panelTransitionHandler = (nextIndex) => {
-			// Kill scrolling until show animation is triggered
-			FullishPage.scrollKiller.disableScroll();
-
 			clearTimeout(panelTransitionTimer);
 			panelTransitionTimer = setTimeout(() => {
+				// Kill scrolling until show animation is triggered
+				FullishPage.scrollKiller.disableScroll();
+
 				panelTransitionExec(nextIndex);
 			}, this.#config.scrollWait * 1000);
 		}
@@ -182,11 +183,11 @@ const FullishPage = class {
 			if (customDelay !== undefined)
 				delay = customDelay;
 			else
-				delay = this.#config.panelAnimationHideDuration * 1000;
+				delay = this.#config.panelAnimationHideDuration;
 
-			setTimeout(() => {
+			gsap.delayedCall(delay, () => {
 				this.panelTransition(nextPanelIndex);
-			}, delay);
+			});
 			this.#currentPanelIndex = nextPanelIndex;
 		};
 
@@ -197,16 +198,16 @@ const FullishPage = class {
 			if (customDelay !== undefined)
 				delay = customDelay;
 			else
-				delay = this.#config.panelAnimationDelay * 1000;
+				delay = this.#config.panelAnimationDelay;
 
-			setTimeout(() => {
+			gsap.delayedCall(delay, () => {
 				this.panelActionShow(panel, panelIndex, isHighVelocity);
 
 				// Enable scroll again
-				setTimeout(() => {
+				gsap.delayedCall(this.#config.panelAnimationShowDuration, () => {
 					FullishPage.scrollKiller.enableScroll();
-				}, this.#config.panelAnimationDelay);
-			}, delay);
+				});
+			});
 		};
 		let panelActionHideExec = (panel, panelIndex) => {
 			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.#config.fastScrollThreshold);
@@ -220,7 +221,7 @@ const FullishPage = class {
 				trigger: this.#fpContainer,
 				start: this.#config.triggerStart,
 				end: this.#config.triggerEnd,
-				scrub: this.#config.scrollWait,
+				scrub: true,
 				fastScrollEnd: this.#config.fastScrollThreshold,
 				// Complete timeline for the first panel
 				onEnter: () => {
@@ -233,6 +234,12 @@ const FullishPage = class {
 					panelTransitionExec.bind(this, lastIndex, 0); // Zero delay
 					panelActionShowExec.bind(this, this.#fpPanels[lastIndex], lastIndex, this.#config.panelTransitionDuration);
 				},
+				onLeave: self => {
+					if (self.isActive) FullishPage.scrollKiller.enableScroll();
+				},
+				onLeaveBack: self => {
+					if (self.isActive) FullishPage.scrollKiller.enableScroll();
+				}
 			}
 		});
 
@@ -378,6 +385,7 @@ const FullishPage = class {
 			window.addEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); // modern desktop
 			window.addEventListener('touchmove', this.preventDefault, this.wheelOpt); // mobile
 			window.addEventListener('keydown', this.preventDefaultForScrollKeys, false);
+			console.info("scrollKiller: Scroll disabled");
 		},
 
 		// call this to Enable
@@ -387,6 +395,7 @@ const FullishPage = class {
 			window.removeEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); 
 			window.removeEventListener('touchmove', this.preventDefault, this.wheelOpt);
 			window.removeEventListener('keydown', this.preventDefaultForScrollKeys, false);
+			console.info("scrollKiller: Scroll enabled");
 		}
 	}
 
@@ -435,7 +444,8 @@ const FullishPage = class {
 
 		let p = gsap.utils.selector(panel);
 		gsap.to(p('h2'), {
-			fontSize: 100
+			fontSize: 100,
+			duration: this.#config.panelAnimationShowDuration,
 		});
 	}
 
@@ -444,7 +454,8 @@ const FullishPage = class {
 
 		let p = gsap.utils.selector(panel);
 		gsap.to(p('h2'), {
-			fontSize: 0
+			fontSize: 0,
+			duration: this.#config.panelAnimationHideDuration,
 		});
 	}
 
