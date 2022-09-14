@@ -68,7 +68,7 @@ const FullishPage = class {
 		this.fullPage = null; // GSAP timeline handler for full-page mode
 
 		// Initialize scrollKiller
-		this.constructor.scrollKiller.init();	
+		FullishPage.scrollKiller.init();	
 	}
 
 	log(...params) {
@@ -331,6 +331,8 @@ const FullishPage = class {
 	static scrollKiller = {
 		// @gblazex
 		// https://stackoverflow.com/a/4770179
+		
+		initialized: false,
 
 		// left: 37, up: 38, right: 39, down: 40,
 		// spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
@@ -354,6 +356,8 @@ const FullishPage = class {
 		wheelEvent: undefined,
 
 		init() {
+			if (this.initialized) return;
+
 			// modern Chrome requires { passive: false } when adding event
 			let supportsPassive = false;
 
@@ -369,6 +373,7 @@ const FullishPage = class {
 
 		// call this to Disable
 		disableScroll() {
+			if (!this.initialized) this.init();
 			window.addEventListener('DOMMouseScroll', this.preventDefault, false); // older FF
 			window.addEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); // modern desktop
 			window.addEventListener('touchmove', this.preventDefault, this.wheelOpt); // mobile
@@ -377,6 +382,7 @@ const FullishPage = class {
 
 		// call this to Enable
 		enableScroll() {
+			if (!this.initialized) this.init();
 			window.removeEventListener('DOMMouseScroll', this.preventDefault, false);
 			window.removeEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); 
 			window.removeEventListener('touchmove', this.preventDefault, this.wheelOpt);
