@@ -58,8 +58,8 @@ const FullishPage = class {
 		});
 
 		// Set variables
-		this.#modes = ['fullPage', 'static'];
-		this.#mode = null; // [fullPage|static]
+		this.#modes = ['full-page', 'static'];
+		this.#mode = null; // [full-page|static]
 		this.#initialized = false;
 		this.#currentPanelIndex = null;
 		this.#currentScreenWidth = null;
@@ -124,7 +124,7 @@ const FullishPage = class {
 			panel.classList.add('panel-' + i);
 		});
 
-		// Set mode to either 'fullPage' or 'static'
+		// Set mode to either 'full-page' or 'static'
 		this.setMode(this.defineMode());
 
 		// Finish initialization
@@ -138,14 +138,14 @@ const FullishPage = class {
 		// Check the parameter before execution.
 		try {
 			if (!this.#modes.includes(mode))
-				throw `[FullishPage.setMode] Invalid parameter '${mode}' is passed as 'mode'. It must be either 'static' or 'fullPage'`;
+				throw `[FullishPage.setMode] Invalid parameter '${mode}' is passed as 'mode'. It must be either 'static' or 'full-page'`;
 		} catch (e) {
 			console.error(e);
 			return;
 		}
 
 		// Set GSAP ScrollTrigger
-		if (mode === 'fullPage') {
+		if (mode === 'full-page') {
 			this.fullPage = this.#fullPageTimeline();
 			this.props.currentPanelIndex = 0;
 			this.props.container.classList.add('fp-mode-full-page');
@@ -295,7 +295,7 @@ const FullishPage = class {
 		this.props.initialized = false;
 
 		let container = gsap.utils.selector(this.props.container);
-		if (this.props.mode === 'fullPage') {
+		if (this.props.mode === 'full-page') {
 			this.props.container.classList.remove('fp-mode-full-page');
 			this.fullPage.kill();
 			this.fullPage = null;
@@ -315,7 +315,7 @@ const FullishPage = class {
 	scrollTo(targetPanelIndex, smooth = true) {
 		let targetDepth;
 
-		if (this.props.mode === 'fullPage') {
+		if (this.props.mode === 'full-page') {
 			if (targetPanelIndex < 0)
 				targetDepth = 0; // TODO: scrollTo before fp
 			else if (targetPanelIndex < this.props.panels.length)
@@ -340,77 +340,13 @@ const FullishPage = class {
 		this.scrollTo(this.props.currentPanelIndex - 1);
 	}
 
-	static scrollKiller = {
-		// @gblazex
-		// https://stackoverflow.com/a/4770179
-		
-		initialized: false,
-
-		// left: 37, up: 38, right: 39, down: 40,
-		// spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
-		keys: {
-			37: 1, 38: 1, 39: 1, 40: 1,
-			32: 1, 33: 1, 34: 1, 35: 1, 36: 1,
-		},
-
-		preventDefault(e) {
-			e.preventDefault();
-		},
-
-		preventDefaultForScrollKeys(e) {
-			if (this.keys[e.keyCode]) {
-				this.preventDefault(e);
-				return false;
-			}
-		},
-
-		wheelOpt: undefined,
-		wheelEvent: undefined,
-
-		init() {
-			if (this.initialized) return;
-
-			// modern Chrome requires { passive: false } when adding event
-			let supportsPassive = false;
-
-			try {
-				window.addEventListener("test", null, Object.defineProperty({}, 'passive', {
-					get: function () { supportsPassive = true; } 
-				}));
-			} catch(e) {}
-
-			this.wheelOpt = supportsPassive ? { passive: false } : false;
-			this.wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
-		},
-
-		// call this to Disable
-		disableScroll() {
-			if (!this.initialized) this.init();
-			window.addEventListener('DOMMouseScroll', this.preventDefault, false); // older FF
-			window.addEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); // modern desktop
-			window.addEventListener('touchmove', this.preventDefault, this.wheelOpt); // mobile
-			window.addEventListener('keydown', this.preventDefaultForScrollKeys, false);
-			console.info("scrollKiller: Scroll disabled");
-		},
-
-		// call this to Enable
-		enableScroll() {
-			if (!this.initialized) this.init();
-			window.removeEventListener('DOMMouseScroll', this.preventDefault, false);
-			window.removeEventListener(this.wheelEvent, this.preventDefault, this.wheelOpt); 
-			window.removeEventListener('touchmove', this.preventDefault, this.wheelOpt);
-			window.removeEventListener('keydown', this.preventDefaultForScrollKeys, false);
-			console.info("scrollKiller: Scroll enabled");
-		}
-	}
-
 	/* 
 	 * Configurable methods
 	 */
 	beforeInit(resized) {};
 	afterInit(resized) {};
 	defineMode() {
-		// Determines adequate mode and return the mode name [static|fullPage]
+		// Determines adequate mode and return the mode name [static|full-page]
 		// Get the height of the window minus the scrollbar and borders
 		let screenHeight = window.innerHeight;
 
@@ -423,7 +359,7 @@ const FullishPage = class {
 		if (maxPanelHeight > screenHeight)
 			return 'static';
 		else
-			return 'fullPage';
+			return 'full-page';
 	};
 
 	panelTransition(nextPanelIndex) {
