@@ -73,13 +73,15 @@ const FullishPage = class {
 	}
 
 	log(...params) {
-		if (this.config.debug) console.log(...params);
+		if (this.#config.debug) console.log(...params);
 	}
 
+	// TODO: Make it so it won't accept change on private variables: present returned value only for referencing
 	get config() {
 		return this.#config;
 	}
 
+	// TODO: Make it so it won't accept change on private variables: present returned value only for referencing
 	get props() {
 		return {
 			mode: this.#mode,
@@ -100,9 +102,9 @@ const FullishPage = class {
 		// Take action only when the width were changed.
 		// Get the width of the window minus the scrollbar and borders
 		let screenWidth = document.body.clientWidth;
-		if (screenWidth === this.props.currentScreenWidth) return;
+		if (screenWidth === this.#currentScreenWidth) return;
 		else {
-			this.props.currentScreenWidth = screenWidth;
+			this.#currentScreenWidth = screenWidth;
 			this.destroy();
 			this.init(true);
 		}
@@ -113,14 +115,14 @@ const FullishPage = class {
 
 		// Set resize event action
 		// Get the width of the window minus the scrollbar and borders
-		this.props.currentScreenWidth = document.body.clientWidth;
+		this.#currentScreenWidth = document.body.clientWidth;
 		if (!resized)
 			this.onResize = this.onResize.bind(this);
 		window.addEventListener('resize', this.onResize);
 
 		// TODO: Disable scroll depth history; maybe make it configurable?
 
-		this.props.panels.forEach((panel, i) => {
+		this.#panels.forEach((panel, i) => {
 			panel.classList.add('panel-' + i);
 		});
 
@@ -128,8 +130,8 @@ const FullishPage = class {
 		this.setMode(this.defineMode());
 
 		// Finish initialization
-		this.props.initialized = true;
-		this.props.container.classList.add('fp-initialized');
+		this.#initialized = true;
+		this.#container.classList.add('fp-initialized');
 
 		this.afterInit(resized);
 	}
@@ -146,26 +148,26 @@ const FullishPage = class {
 
 		// Set GSAP ScrollTrigger
 		if (mode === 'full-page') {
+			this.#container.setAttribute('data-fullish-page-mode', 'full-page');
+			this.log('[FullishPage.setMode] Setting full-page mode.');
 			this.fullPage = this.#fullPageTimeline();
-			this.props.currentPanelIndex = 0;
-			this.props.container.classList.add('fp-mode-full-page');
+			this.#container.classList.add('fp-mode-full-page');
 		} else if (mode === 'static') {
-			this.props.container.setAttribute('data-fullish-page-mode', 'static');
+			this.#container.setAttribute('data-fullish-page-mode', 'static');
 			this.log('[FullishPage.setMode] Setting static mode.'); // TODO
-			this.props.container.classList.add('fp-mode-static');
+			this.#container.classList.add('fp-mode-static');
 		}
 
+		this.#currentPanelIndex = 0;
+
 		// Finish setting mode
-		this.props.mode = mode;
+		this.#mode = mode;
 	}
 
 	#fullPageTimeline() {
-		this.props.container.setAttribute('data-fullish-page-mode', 'full-page');
-		this.log('[FullishPage.setMode] Setting full-page mode.');
-
 		// Set height of container to the total scroll height of all panels
-		gsap.set(this.props.container, {
-			height: (this.props.panels.length * this.config.panelDepth * 100) + "vh",
+		gsap.set(this.#container, {
+			height: (this.#panels.length * this.#config.panelDepth * 100) + "vh",
 		});
 
 		// Transition animation helper:
@@ -179,7 +181,7 @@ const FullishPage = class {
 				FullishPage.scrollKiller.disableScroll();
 
 				panelTransitionExec(nextIndex);
-			}, this.config.scrollWait * 1000);
+			}, this.#config.scrollWait * 1000);
 		}
 
 		// Panel transition wrapper function
@@ -188,56 +190,56 @@ const FullishPage = class {
 			if (customDelay !== undefined)
 				delay = customDelay;
 			else
-				delay = this.config.panelAnimationHideDuration;
+				delay = this.#config.panelAnimationHideDuration;
 
 			gsap.delayedCall(delay, () => {
 				this.panelTransition(nextPanelIndex);
 			});
-			this.props.currentPanelIndex = nextPanelIndex;
+			this.#currentPanelIndex = nextPanelIndex;
 		};
 
 		// Panel action wrapper functions
 		let panelActionShowExec = (panel, panelIndex, customDelay) => {
-			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.config.fastScrollThreshold),
+			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.#config.fastScrollThreshold),
 					delay;
 			if (customDelay !== undefined)
 				delay = customDelay;
 			else
-				delay = this.config.panelAnimationDelay;
+				delay = this.#config.panelAnimationDelay;
 
 			gsap.delayedCall(delay, () => {
 				this.panelActionShow(panel, panelIndex, isHighVelocity);
 
 				// Enable scroll again
-				gsap.delayedCall(this.config.panelAnimationShowDuration, () => {
+				gsap.delayedCall(this.#config.panelAnimationShowDuration, () => {
 					FullishPage.scrollKiller.enableScroll();
 				});
 			});
 		};
 		let panelActionHideExec = (panel, panelIndex) => {
-			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.config.fastScrollThreshold);
+			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.#config.fastScrollThreshold);
 			this.panelActionHide(panel, panelIndex, isHighVelocity);
 		};
 
 		// Define timeline
 		let timeline = gsap.timeline({
 			scrollTrigger: {
-				markers: this.config.debug,
-				trigger: this.props.container,
-				start: this.config.triggerStart,
-				end: this.config.triggerEnd,
+				markers: this.#config.debug,
+				trigger: this.#container,
+				start: this.#config.triggerStart,
+				end: this.#config.triggerEnd,
 				scrub: true,
-				fastScrollEnd: this.config.fastScrollThreshold,
+				fastScrollEnd: this.#config.fastScrollThreshold,
 				// Complete timeline for the first panel
 				onEnter: () => {
-					panelActionShowExec.bind(this, this.props.panels[0], 0, 0); // Zero delay
+					panelActionShowExec.bind(this, this.#panels[0], 0, 0); // Zero delay
 				},
 				// Complete timeline for the last panel
 				// (fallback in case the last panel was not displayed in the last time scroll left the trigger)
 				onEnterBack: () => {
-					let lastIndex = this.props.panels.length - 1;
+					let lastIndex = this.#panels.length - 1;
 					panelTransitionExec.bind(this, lastIndex, 0); // Zero delay
-					panelActionShowExec.bind(this, this.props.panels[lastIndex], lastIndex, this.config.panelTransitionDuration);
+					panelActionShowExec.bind(this, this.#panels[lastIndex], lastIndex, this.#config.panelTransitionDuration);
 				},
 				onLeave: self => {
 					if (self.isActive) FullishPage.scrollKiller.enableScroll();
@@ -249,7 +251,7 @@ const FullishPage = class {
 		});
 
 		// Define timeline for each panels
-		this.props.panels.forEach((panel, i, panels) => {    
+		this.#panels.forEach((panel, i, panels) => {    
 			timeline.addLabel("panel-" + i);
 
 			// Panel action (show|hide)
@@ -291,39 +293,39 @@ const FullishPage = class {
 
 	destroy() {
 		this.beforeDestroy();
-		this.props.container.classList.remove('fp-initialized');
-		this.props.initialized = false;
+		this.#container.classList.remove('fp-initialized');
+		this.#initialized = false;
 
-		let container = gsap.utils.selector(this.props.container);
-		if (this.props.mode === 'full-page') {
-			this.props.container.classList.remove('fp-mode-full-page');
+		let container = gsap.utils.selector(this.#container);
+		if (this.#mode === 'full-page') {
+			this.#container.classList.remove('fp-mode-full-page');
 			this.fullPage.kill();
 			this.fullPage = null;
-			gsap.set([this.props.container, container('*')], {
+			gsap.set([this.#container, container('*')], {
 				clearProps: "all",
 			});
-		} else if (this.props.mode === 'static') {
-			this.props.container.classList.remove('fp-mode-static');
+		} else if (this.#mode === 'static') {
+			this.#container.classList.remove('fp-mode-static');
 		}
 
 		window.removeEventListener('resize', this.onResize);
 
-		this.props.container.removeAttribute('data-fullish-page-mode');
+		this.#container.removeAttribute('data-fullish-page-mode');
 		this.afterDestroy();
 	}
 
 	scrollTo(targetPanelIndex, smooth = true) {
 		let targetDepth;
 
-		if (this.props.mode === 'full-page') {
+		if (this.#mode === 'full-page') {
 			if (targetPanelIndex < 0)
 				targetDepth = 0; // TODO: scrollTo before fp
-			else if (targetPanelIndex < this.props.panels.length)
+			else if (targetPanelIndex < this.#panels.length)
 				targetDepth = Math.ceil(this.fullPage.scrollTrigger.labelToScroll('panel-' + i));
 			else
 				targetDepth = 0; // TODO: scrollTO after fp
-		} else if (this.props.mode === 'static') {
-			targetDepth = this.props.panels[targetPanelIndex].offsetTop;
+		} else if (this.#mode === 'static') {
+			targetDepth = this.#panels[targetPanelIndex].offsetTop;
 		}
 		window.scroll({
 			top: targetDepth + 1, // TODO: Revisit to check if `+1` is good enough
@@ -333,11 +335,11 @@ const FullishPage = class {
 	}
 
 	scrollToNext() {
-		this.scrollTo(this.props.currentPanelIndex + 1);
+		this.scrollTo(this.#currentPanelIndex + 1);
 	}
 
 	scrollToPrev() {
-		this.scrollTo(this.props.currentPanelIndex - 1);
+		this.scrollTo(this.#currentPanelIndex - 1);
 	}
 
 	/* 
