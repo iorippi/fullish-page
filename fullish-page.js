@@ -205,7 +205,7 @@ const FullishPage = class {
 		// Define timeline for each panels
 		this.#panels.forEach((panel, panelIndex) => {    
 			// Panel show
-			timeline.add(this.tlPanelShow(panelIndex))
+			timeline.add(this.tlPanelShow(panelIndex, panel))
 				.duration(this.#config.tlPanelShowDuration);
 
 			timeline.addLabel("panel-" + panelIndex);
@@ -215,7 +215,7 @@ const FullishPage = class {
 
 			if (panelIndex < this.#panels.length - 1) {
 				// Panel hide
-				timeline.add(this.tlPanelHide(panelIndex), ">" + this.#config.tlPanelFreeScrollDuration)
+				timeline.add(this.tlPanelHide(panelIndex, panel), ">" + this.#config.tlPanelFreeScrollDuration)
 					.duration(this.#config.tlPanelHideDuration);
 
 				// Panel transition
@@ -303,7 +303,7 @@ const FullishPage = class {
 		return tl;
 	}
 
-	tlPanelShow(panelIndex) {
+	tlPanelShow(panelIndex, panel) {
 		let tl = gsap.timeline(),
 		    p = gsap.utils.selector(this.props.panels[panelIndex]);
 
@@ -314,7 +314,7 @@ const FullishPage = class {
 		return tl;
 	}
 
-	tlPanelHide(panelIndex) {
+	tlPanelHide(panelIndex, panel) {
 		let tl = gsap.timeline(),
 		    p = gsap.utils.selector(this.props.panels[panelIndex]);
 
