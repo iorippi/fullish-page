@@ -222,8 +222,7 @@ const FullishPage = class {
 				durations.hide = tlPanelHideDuration[panelIndex];
 
 			// Panel show
-			timeline.add(this.tlPanelShow(panelIndex, panel))
-				.duration(durations.show);
+			timeline.add(this.tlPanelShow(panelIndex, panel).duration(durations.show));
 
 			timeline.addLabel("panel-" + panelIndex);
 			timeline.call(() => {
@@ -237,12 +236,10 @@ const FullishPage = class {
 
 			if (panelIndex < this.#panels.length - 1) {
 				// Panel hide
-				timeline.add(this.tlPanelHide(panelIndex, panel))
-					.duration(durations.hide);
+				timeline.add(this.tlPanelHide(panelIndex, panel).duration(durations.hide));
 
 				// Panel transition
-				timeline.add(this.tlPanelTransition(panelIndex))
-					.duration(durations.transition);
+				timeline.add(this.tlPanelTransition(panelIndex).duration(durations.transition));
 			}
 		});
 
