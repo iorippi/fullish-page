@@ -25,11 +25,11 @@ const FullishPage = class {
 		this.#defaults = {
 				selector: '.fullish-page',
 				panelDepth: 1,
-				scrollWait: 0.1,
-				panelTransitionDuration: 1,
-				panelAnimationHideDuration: 1,
-				panelAnimationDelay: 2,
-				panelAnimationShowDuration: 1,
+				scrollDelay: 1,
+				tlPanelShowDuration: 1,
+				tlPanelFreeScrollDuration: 4,
+				tlPanelHideDuration: 1,
+				tlPanelTransitionDuration: 1,
 				fastScrollThreshold: 2500,
 				triggerStart: "top top",
 				triggerEnd: "bottom bottom",
@@ -48,9 +48,9 @@ const FullishPage = class {
 			'beforeInit',
 			'afterInit',
 			'defineMode',
-			'tlTransition',
-			'tlShow',
-			'tlHide',
+			'tlPanelTransition',
+			'tlPanelShow',
+			'tlPanelHide',
 			'beforeDestroy',
 			'afterDestroy',
 		].forEach(funcName => {
@@ -67,9 +67,6 @@ const FullishPage = class {
 		this.#wrapper = document.querySelector(this.#config.selector + ' > .fullish-page-wrapper');
 		this.#panels = gsap.utils.toArray(document.querySelectorAll(this.#config.selector + ' > .fullish-page-wrapper > .panel'));
 		this.fullPage = null; // GSAP timeline handler for full-page mode
-
-		// Initialize scrollKiller
-		FullishPage.scrollKiller.init();	
 	}
 
 	log(...params) {
@@ -156,9 +153,8 @@ const FullishPage = class {
 			this.#container.setAttribute('data-fullish-page-mode', 'static');
 			this.log('[FullishPage.setMode] Setting static mode.'); // TODO
 			this.#container.classList.add('fp-mode-static');
+			this.#currentPanelIndex = 0;
 		}
-
-		this.#currentPanelIndex = 0;
 
 		// Finish setting mode
 		this.#mode = mode;
@@ -170,57 +166,6 @@ const FullishPage = class {
 			height: (this.#panels.length * this.#config.panelDepth * 100) + "vh",
 		});
 
-		// Transition animation helper:
-		// Wait for a moment until executing transition
-		// to prevent panels in between the current and the target panel appearing mid-transition
-		let panelTransitionTimer;
-		let panelTransitionHandler = (nextIndex) => {
-			clearTimeout(panelTransitionTimer);
-			panelTransitionTimer = setTimeout(() => {
-				// Kill scrolling until show animation is triggered
-				FullishPage.scrollKiller.disableScroll();
-
-				panelTransitionExec(nextIndex);
-			}, this.#config.scrollWait * 1000);
-		}
-
-		// Panel transition wrapper function
-		let panelTransitionExec = (nextPanelIndex, customDelay) => {
-			let delay;
-			if (customDelay !== undefined)
-				delay = customDelay;
-			else
-				delay = this.#config.panelAnimationHideDuration;
-
-			gsap.delayedCall(delay, () => {
-				this.panelTransition(nextPanelIndex);
-			});
-			this.#currentPanelIndex = nextPanelIndex;
-		};
-
-		// Panel action wrapper functions
-		let panelActionShowExec = (panel, panelIndex, customDelay) => {
-			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.#config.fastScrollThreshold),
-					delay;
-			if (customDelay !== undefined)
-				delay = customDelay;
-			else
-				delay = this.#config.panelAnimationDelay;
-
-			gsap.delayedCall(delay, () => {
-				this.panelActionShow(panel, panelIndex, isHighVelocity);
-
-				// Enable scroll again
-				gsap.delayedCall(this.#config.panelAnimationShowDuration, () => {
-					FullishPage.scrollKiller.enableScroll();
-				});
-			});
-		};
-		let panelActionHideExec = (panel, panelIndex) => {
-			let isHighVelocity = (Math.abs(this.fullPage.scrollTrigger.getVelocity()) >= this.#config.fastScrollThreshold);
-			this.panelActionHide(panel, panelIndex, isHighVelocity);
-		};
-
 		// Define timeline
 		let timeline = gsap.timeline({
 			scrollTrigger: {
@@ -228,63 +173,40 @@ const FullishPage = class {
 				trigger: this.#container,
 				start: this.#config.triggerStart,
 				end: this.#config.triggerEnd,
-				scrub: true,
+				scrub: this.#config.scrollDelay,
 				fastScrollEnd: this.#config.fastScrollThreshold,
-				// Complete timeline for the first panel
 				onEnter: () => {
-					panelActionShowExec.bind(this, this.#panels[0], 0, 0); // Zero delay
 				},
-				// Complete timeline for the last panel
-				// (fallback in case the last panel was not displayed in the last time scroll left the trigger)
 				onEnterBack: () => {
-					let lastIndex = this.#panels.length - 1;
-					panelTransitionExec.bind(this, lastIndex, 0); // Zero delay
-					panelActionShowExec.bind(this, this.#panels[lastIndex], lastIndex, this.#config.panelTransitionDuration);
 				},
 				onLeave: self => {
-					if (self.isActive) FullishPage.scrollKiller.enableScroll();
 				},
 				onLeaveBack: self => {
-					if (self.isActive) FullishPage.scrollKiller.enableScroll();
 				}
 			}
 		});
 
 		// Define timeline for each panels
-		this.#panels.forEach((panel, i, panels) => {    
-			timeline.addLabel("panel-" + i);
+		this.#panels.forEach((panel, panelIndex) => {    
+			// Panel show
+			timeline.add(this.tlPanelShow(panelIndex))
+				.duration(this.#config.tlPanelShowDuration);
 
-			// Panel action (show|hide)
-			// NOTE: The first panel's initial `panelActionShowExec` is covered in `scrollTrigger.onEnter`
-			if (i > 0) {
-				timeline.set(null, {
-					onComplete: panelActionShowExec.bind(this),
-					onCompleteParams: [panel, i],
-					onReverseComplete: panelActionHideExec.bind(this),
-					onReverseCompleteParams: [panel, i],
-				});
-			}
+			timeline.addLabel("panel-" + panelIndex);
+			timeline.call(() => {
+				this.#currentPanelIndex = panelIndex;
+			});
 
-			// Panel free scroll
-			timeline.to(null , { duration: 1 });
-
-			// NOTE: The last panel's `panelActionShowExec` on reverse is covered in `scrollTrigger.onEnterBack`
-			if (i < panels.length - 1) { // Not the last panel
-				// Panel action (hide|show)
-				timeline.set(null, {
-					onComplete: panelActionHideExec.bind(this),
-					onCompleteParams: [panel, i],
-					onReverseComplete: panelActionShowExec.bind(this),
-					onReverseCompleteParams: [panel, i],
-				});
+			if (panelIndex < this.#panels.length - 1) {
+				// Panel hide
+				timeline.add(this.tlPanelHide(panelIndex), ">" + this.#config.tlPanelFreeScrollDuration)
+					.duration(this.#config.tlPanelHideDuration);
 
 				// Panel transition
-				timeline.set(null, {
-					onComplete: panelTransitionHandler.bind(this),
-					onCompleteParams: [i + 1],
-					onReverseComplete: panelTransitionHandler.bind(this),
-					onReverseCompleteParams: [i],
-				});
+				timeline.add(this.tlPanelTransition(panelIndex))
+					.duration(this.#config.tlPanelTransitionDuration);
+			} else {
+				timeline.addLabel("panels-end");
 			}
 		});
 
@@ -321,7 +243,7 @@ const FullishPage = class {
 			if (targetPanelIndex < 0)
 				targetDepth = 0; // TODO: scrollTo before fp
 			else if (targetPanelIndex < this.#panels.length)
-				targetDepth = Math.ceil(this.fullPage.scrollTrigger.labelToScroll('panel-' + i));
+				targetDepth = Math.ceil(this.fullPage.scrollTrigger.labelToScroll('panel-' + targetPanelIndex));
 			else
 				targetDepth = 0; // TODO: scrollTO after fp
 		} else if (this.#mode === 'static') {
@@ -364,42 +286,44 @@ const FullishPage = class {
 			return 'full-page';
 	};
 
-	panelTransition(nextPanelIndex) {
-		this.log(`Panel: transition ${this.props.currentPanelIndex} => ${nextPanelIndex}`);
+	tlPanelTransition(prevPanelIndex) {
+		let nextPanelIndex = prevPanelIndex + 1;
 
 		let tl = gsap.timeline({ 
 			defaults: {
-				overwrite: true,
-				duration: this.config.panelTransitionDuration,
-				ease: "none",
+				ease: Linear.easeNone,
 			}
 		});
-		tl.to(this.props.panels, {
+		tl.to(this.props.panels[prevPanelIndex], {
 			autoAlpha: 0,
 		});
 		tl.to(this.props.panels[nextPanelIndex], {
 			autoAlpha: 1,
 		}, "<");
+
+		return tl;
 	}
 
-	panelActionShow(panel, panelIndex, isHighVelocity) {
-		this.log(`Panel: action (show) ${panelIndex}`);
+	tlPanelShow(panelIndex) {
+		let tl = gsap.timeline(),
+		    p = gsap.utils.selector(this.props.panels[panelIndex]);
 
-		let p = gsap.utils.selector(panel);
-		gsap.to(p('h2'), {
-			fontSize: 100,
-			duration: this.config.panelAnimationShowDuration,
-		});
-	}
-
-	panelActionHide(panel, panelIndex, isHighVelocity) {
-		this.log(`Panel: action (hide) ${panelIndex}`);
-
-		let p = gsap.utils.selector(panel);
-		gsap.to(p('h2'), {
+		tl.from(p('h2'), {
 			fontSize: 0,
-			duration: this.config.panelAnimationHideDuration,
 		});
+
+		return tl;
+	}
+
+	tlPanelHide(panelIndex) {
+		let tl = gsap.timeline(),
+		    p = gsap.utils.selector(this.props.panels[panelIndex]);
+
+		tl.to(p('h2'), {
+			fontSize: 0,
+		});
+
+		return tl;
 	}
 
 	beforeDestroy() {};
