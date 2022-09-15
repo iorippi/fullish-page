@@ -213,18 +213,20 @@ const FullishPage = class {
 				this.#currentPanelIndex = panelIndex;
 			});
 
+			// Free Scroll (Duration for doing nothing)
+			timeline.to(null, {
+				duration: this.#config.tlPanelFreeScrollDuration,
+			});
+
 			if (panelIndex < this.#panels.length - 1) {
 				// Panel hide
-				timeline.add(this.tlPanelHide(panelIndex, panel), ">" + this.#config.tlPanelFreeScrollDuration)
+				timeline.add(this.tlPanelHide(panelIndex, panel))
 					.duration(this.#config.tlPanelHideDuration);
 
 				// Panel transition
 				timeline.add(this.tlPanelTransition(panelIndex))
 					.duration(this.#config.tlPanelTransitionDuration);
-			} else {
-				timeline.addLabel("panels-end");
-			}
-		});
+			}		});
 
 		return timeline;
 	}
