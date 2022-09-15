@@ -27,7 +27,7 @@ const FullishPage = class {
 				panelDepth: 1,
 				scrollDelay: 1,
 				tlPanelShowDuration: 1,
-				tlPanelFreeScrollDuration: 4,
+				tlPanelFreeScrollDuration: 2,
 				tlPanelHideDuration: 1,
 				tlPanelTransitionDuration: 1,
 				fastScrollThreshold: 2500,
@@ -47,7 +47,6 @@ const FullishPage = class {
 		[
 			'beforeInit',
 			'afterInit',
-			'defineMode',
 			'tlPanelTransition',
 			'tlPanelShow',
 			'tlPanelHide',
@@ -124,7 +123,7 @@ const FullishPage = class {
 		});
 
 		// Set mode to either 'full-page' or 'static'
-		this.setMode(this.defineMode());
+		this.setMode(this.#defineMode());
 
 		// Finish initialization
 		this.#initialized = true;
@@ -159,6 +158,23 @@ const FullishPage = class {
 		// Finish setting mode
 		this.#mode = mode;
 	}
+
+	#defineMode() {
+		// Determines adequate mode and return the mode name [static|full-page]
+		// Get the height of the window minus the scrollbar and borders
+		let screenHeight = window.innerHeight;
+
+		// Get the biggest height of panels
+		let maxPanelHeight = this.props.panels.reduce((prevHeight, curPanel) => {
+			return Math.max(prevHeight, curPanel.scrollHeight);
+		}, 0);
+
+		// Set mode to static if any panel is higher than the height of the window
+		if (maxPanelHeight > screenHeight)
+			return 'static';
+		else
+			return 'full-page';
+	};
 
 	#fullPageTimeline() {
 		// Set height of container to the total scroll height of all panels
@@ -269,23 +285,6 @@ const FullishPage = class {
 	 */
 	beforeInit(resized) {};
 	afterInit(resized) {};
-	defineMode() {
-		// Determines adequate mode and return the mode name [static|full-page]
-		// Get the height of the window minus the scrollbar and borders
-		let screenHeight = window.innerHeight;
-
-		// Get the biggest height of panels
-		let maxPanelHeight = this.props.panels.reduce((prevHeight, curPanel) => {
-			return Math.max(prevHeight, curPanel.scrollHeight);
-		}, 0);
-
-		// Set mode to static if any panel is higher than the height of the window
-		if (maxPanelHeight > screenHeight)
-			return 'static';
-		else
-			return 'full-page';
-	};
-
 	tlPanelTransition(prevPanelIndex) {
 		let nextPanelIndex = prevPanelIndex + 1;
 
