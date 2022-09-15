@@ -220,7 +220,6 @@ const FullishPage = class {
 				durations.hide = tlPanelHideDuration;
 			else
 				durations.hide = tlPanelHideDuration[panelIndex];
-			console.log(durations);
 
 			// Panel show
 			timeline.add(this.tlPanelShow(panelIndex, panel))
