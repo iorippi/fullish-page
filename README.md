@@ -53,7 +53,7 @@ fp.init();
 |-----------------|----------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | beforeInit      | function | resized                           | Function to execute before `init()`                                                                                                                                         |
 | afterInit       | function | resized                           | Function to execute after `init()`                                                                                                                                          |
-| defineMode      | function |                                   | Function to decide which mode to set. Default is configured to check the viewport size against each panel to determine if it should set it to fullPage mode or static mode. |
+| defineMode      | function |                                   | Function to decide which mode to set. Default is configured to check the viewport size against each panel to determine if it should set it to full-page mode or static mode. |
 | panelTransition | function | nextPanelIndex                    | Animation for panel-to-panel transition. Duration must match with `panelTransitionDuration`.                                                                                |
 | panelActionShow | function | panel, panelIndex, isHighVelocity | Animation for panel showing animation.                                                                                                                                      |
 | panelActionHide | function | panel, panelIndex, isHighVelocity | Animation for panel hiding animation. Duration must match with `panelAnimationHideDuration`.                                                                                |
@@ -67,7 +67,7 @@ fp.init();
 | config       |                  | Returns currently configured variables                                                                              |
 | props        |                  | Returns various internal properties such as element objects for container, each panels, current index of the panel. |
 | onResize     |                  | Function to be executed upon browser resize event                                                                   |
-| setMode      |                  | Set mode (either `fullPage` or `static`)                                                                            |
+| setMode      |                  | Set mode (either `full-page` or `static`)                                                                            |
 | destroy      |                  | Undo initialization                                                                                                 |
 | scrollTo     | targetPanelIndex | Scroll to the panel designated by index. (Count starts from 0)                                                      |
 | scrollToNext |                  | Scroll to a next panel of the current panel                                                                         |
