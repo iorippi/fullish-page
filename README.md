@@ -55,8 +55,8 @@ fp.init();
 | beforeInit        | function | resized                    | Function to execute before `init()`                                                                                                                                         |
 | afterInit         | function | resized                    | Function to execute after `init()`                                                                                                                                          |
 | tlPanelTransition | function | nextPanelIndex             | GSAP Timeline for panel-to-panel transition. Duration must match with `panelTransitionDuration`.                                                                            |
-| tlPanelShow       | function | panelIndex                 | GSAP Timeline for panel showing animation.                                                                                                                                  |
-| tlPanelHide       | function | panelIndex                 | GSAP Timeline for panel hiding animation. Duration must match with `panelAnimationHideDuration`.                                                                            |
+| tlPanelShow       | function | panelIndex, panel          | GSAP Timeline for panel showing animation.                                                                                                                                  |
+| tlPanelHide       | function | panelIndex, panel          | GSAP Timeline for panel hiding animation. Duration must match with `panelAnimationHideDuration`.                                                                            |
 | beforeDestroy     | function |                            | Function to execute before `destroy()`                                                                                                                                      |
 | afterDestroy      | function |                            | Function to execute after `destroy()`                                                                                                                                       |
 
