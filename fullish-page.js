@@ -204,9 +204,27 @@ const FullishPage = class {
 
 		// Define timeline for each panels
 		this.#panels.forEach((panel, panelIndex) => {    
+			let tlPanelShowDuration = this.#config.tlPanelShowDuration,
+			    tlPanelHideDuration = this.#config.tlPanelHideDuration;
+			let durations = {
+				show: null,
+				freeScroll: this.#config.tlPanelFreeScrollDuration,
+				hide: null,
+				transition: this.#config.tlPanelTransitionDuration,
+			};
+			if (typeof tlPanelShowDuration === "number")
+				durations.show = tlPanelShowDuration;
+			else
+				durations.show = tlPanelShowDuration[panelIndex];
+			if (typeof tlPanelHideDuration === "number")
+				durations.hide = tlPanelHideDuration;
+			else
+				durations.hide = tlPanelHideDuration[panelIndex];
+			console.log(durations);
+
 			// Panel show
 			timeline.add(this.tlPanelShow(panelIndex, panel))
-				.duration(this.#config.tlPanelShowDuration);
+				.duration(durations.show);
 
 			timeline.addLabel("panel-" + panelIndex);
 			timeline.call(() => {
@@ -215,18 +233,19 @@ const FullishPage = class {
 
 			// Free Scroll (Duration for doing nothing)
 			timeline.to(null, {
-				duration: this.#config.tlPanelFreeScrollDuration,
+				duration: durations.freeScroll,
 			});
 
 			if (panelIndex < this.#panels.length - 1) {
 				// Panel hide
 				timeline.add(this.tlPanelHide(panelIndex, panel))
-					.duration(this.#config.tlPanelHideDuration);
+					.duration(durations.hide);
 
 				// Panel transition
 				timeline.add(this.tlPanelTransition(panelIndex))
-					.duration(this.#config.tlPanelTransitionDuration);
-			}		});
+					.duration(durations.transition);
+			}
+		});
 
 		return timeline;
 	}
