@@ -12,9 +12,9 @@ const FullishPage = class {
 	#modes;
 	#mode;
 	#initialized;
-	#fpContainer;
-	#fpWrapper;
-	#fpPanels;
+	#container;
+	#wrapper;
+	#panels;
 	#currentPanelIndex;
 	#currentScreenWidth;
 	#defaults;
@@ -48,9 +48,9 @@ const FullishPage = class {
 			'beforeInit',
 			'afterInit',
 			'defineMode',
-			'panelTransition',
-			'panelActionShow',
-			'panelActionHide',
+			'tlTransition',
+			'tlShow',
+			'tlHide',
 			'beforeDestroy',
 			'afterDestroy',
 		].forEach(funcName => {
@@ -63,9 +63,9 @@ const FullishPage = class {
 		this.#initialized = false;
 		this.#currentPanelIndex = null;
 		this.#currentScreenWidth = null;
-		this.#fpContainer = document.querySelector(this.#config.selector);
-		this.#fpWrapper = document.querySelector(this.#config.selector + ' > .fullish-page-wrapper');
-		this.#fpPanels = gsap.utils.toArray(document.querySelectorAll(this.#config.selector + ' > .fullish-page-wrapper > .panel'));
+		this.#container = document.querySelector(this.#config.selector);
+		this.#wrapper = document.querySelector(this.#config.selector + ' > .fullish-page-wrapper');
+		this.#panels = gsap.utils.toArray(document.querySelectorAll(this.#config.selector + ' > .fullish-page-wrapper > .panel'));
 		this.fullPage = null; // GSAP timeline handler for full-page mode
 
 		// Initialize scrollKiller
@@ -84,9 +84,9 @@ const FullishPage = class {
 		return {
 			mode: this.#mode,
 			initialized: this.#initialized,
-			container: this.#fpContainer,
-			wrapper: this.#fpWrapper,
-			panels: this.#fpPanels,
+			container: this.#container,
+			wrapper: this.#wrapper,
+			panels: this.#panels,
 			currentPanelIndex: this.#currentPanelIndex,
 			currentScreenWidth: this.#currentScreenWidth,
 		}
