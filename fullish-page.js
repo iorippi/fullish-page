@@ -66,6 +66,10 @@ const FullishPage = class {
 		this.#wrapper = document.querySelector(this.#config.selector + ' > .fullish-page-wrapper');
 		this.#panels = gsap.utils.toArray(document.querySelectorAll(this.#config.selector + ' > .fullish-page-wrapper > .panel'));
 		this.fullPage = null; // GSAP timeline handler for full-page mode
+
+		// Set buttons
+		this.btnNext = document.querySelector(this.#config.buttonNext);
+		this.btnPrev = document.querySelector(this.#config.buttonPrev);
 	}
 
 	log(...params) {
@@ -87,6 +91,8 @@ const FullishPage = class {
 			panels: this.#panels,
 			currentPanelIndex: this.#currentPanelIndex,
 			currentScreenWidth: this.#currentScreenWidth,
+			btnNext: this.btnNext,
+			btnPrev: this.btnPrev,
 		}
 	}
 
@@ -125,6 +131,8 @@ const FullishPage = class {
 		// Set mode to either 'full-page' or 'static'
 		this.setMode(this.#defineMode());
 
+		this.setButtons();
+
 		// Finish initialization
 		this.#initialized = true;
 		this.#container.classList.add('fp-initialized');
@@ -147,12 +155,13 @@ const FullishPage = class {
 			this.#container.setAttribute('data-fullish-page-mode', 'full-page');
 			this.log('[FullishPage.setMode] Setting full-page mode.');
 			this.fullPage = this.#fullPageTimeline();
+			this.#currentPanelIndex = 0;
 			this.#container.classList.add('fp-mode-full-page');
 		} else if (mode === 'static') {
 			this.#container.setAttribute('data-fullish-page-mode', 'static');
 			this.log('[FullishPage.setMode] Setting static mode.'); // TODO
-			this.#container.classList.add('fp-mode-static');
 			this.#currentPanelIndex = 0;
+			this.#container.classList.add('fp-mode-static');
 		}
 
 		// Finish setting mode
@@ -223,11 +232,11 @@ const FullishPage = class {
 
 			// Panel show
 			timeline.add(this.tlPanelShow(panelIndex, panel).duration(durations.show));
-
-			timeline.addLabel("panel-" + panelIndex);
 			timeline.call(() => {
+				this.log(`update index ${this.#currentPanelIndex} => ${panelIndex}`);
 				this.#currentPanelIndex = panelIndex;
 			});
+			timeline.addLabel("panel-" + panelIndex);
 
 			// Free Scroll (Duration for doing nothing)
 			timeline.to(null, {
@@ -244,6 +253,39 @@ const FullishPage = class {
 		});
 
 		return timeline;
+	}
+
+	setButtons() {
+		let btnDefault = {
+				autoAlpha: 1,
+				duration: 0.3,
+				overwrite: true,
+				paused: true,
+			};
+
+		if (this.btnNext) {
+			this.twBtnNext = gsap.to(this.btnNext, btnDefault);
+			this.btnNext.addEventListener('click', this.scrollToNext.bind(this)); // TODO: fix scoping
+		}
+		if (this.btnPrev) {
+			this.twBtnPrev = gsap.to(this.btnPrev, btnDefault);
+			this.btnPrev.addEventListener('click', this.scrollToPrev.bind(this)); // TODO: fix scoping
+		}
+	}
+
+	toggleNextButton(on = true) {
+		if (on) {
+			this.twBtnNext.play();
+		} else {
+			this.twBtnNext.reverse();
+		}
+	}
+	togglePrevButton(on = true) {
+		if (on) {
+			this.twBtnPrev.play();
+		} else {
+			this.twBtnPrev.reverse();
+		}
 	}
 
 	destroy() {
@@ -263,6 +305,8 @@ const FullishPage = class {
 			this.#container.classList.remove('fp-mode-static');
 		}
 
+		// TODO: remove button eventlisteners and tween
+
 		window.removeEventListener('resize', this.onResize);
 
 		this.#container.removeAttribute('data-fullish-page-mode');
@@ -277,8 +321,7 @@ const FullishPage = class {
 				targetDepth = 0; // TODO: scrollTo before fp
 			else if (targetPanelIndex < this.#panels.length)
 				targetDepth = Math.ceil(this.fullPage.scrollTrigger.labelToScroll('panel-' + targetPanelIndex));
-			else
-				targetDepth = 0; // TODO: scrollTO after fp
+			// Do nothing when scrollTO after fp
 		} else if (this.#mode === 'static') {
 			targetDepth = this.#panels[targetPanelIndex].offsetTop;
 		}
