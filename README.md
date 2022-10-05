@@ -37,7 +37,6 @@ fp.init();
 | panelDepth                 | integer           |                           1 | [Full-Page mode only] Each panel's scroll depth. (1 = 100vh)                                                                                                                       |
 | scrollDelay                | integer           |                           1 | [Full-Page mode only] Time it takes for animation to catch up to the scrolled position.                                                                                            |
 | tlPanelShowDuration        | integer \| array  |                           1 | [Full-Page mode only] Duration for panel after transition is made (in seconds). Array for variable duration for each panels.                                                       |
-| tlPanelFreeScrollDuration  | integer \| array  |                           2 | [Full-Page mode only] Duration for panel not doing any animation (in seconds).  Array for variable duration for each panels.                                                       |
 | tlPanelHideDuration        | integer           |                           1 | [Full-Page mode only] Duration for panel before transition is triggered (in seconds).                                                                                              |
 | tlPanelTransitionDuration  | integer           |                           1 | [Full-Page mode only] Duration for panel-to-panel transition animation (in seconds).                                                                                               |
 | fastScrollThreshold        | integer           |                        2500 | Threshold for triggering `fastScroll` for GSAP ScrollTrigger and other animations to skip in case the speed was above the threshold. (pixels per second)                           |
@@ -69,9 +68,9 @@ fp.init();
 | onResize     |                  | Function to be executed upon browser resize event                                                                   |
 | setMode      |                  | Set mode (either `full-page` or `static`)                                                                            |
 | destroy      |                  | Undo initialization                                                                                                 |
-| scrollTo     | targetPanelIndex | Scroll to the panel designated by index. (Count starts from 0)                                                      |
-| scrollToNext |                  | Scroll to a next panel of the current panel                                                                         |
-| scrollToPrev |                  | Scroll to a previous of the current panel                                                                           |
+| goto         | targetPanelIndex | Scroll to the panel designated by index. (Count starts from 0)                                                      |
+| gotoNext     |                  | Scroll to a next panel of the current panel                                                                         |
+| gotoPrev     |                  | Scroll to a previous of the current panel                                                                           |
 
 
 
