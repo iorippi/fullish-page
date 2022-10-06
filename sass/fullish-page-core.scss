@@ -9,13 +9,6 @@
 	width: 100%; // Should be equal to the maximum viewport width
 	height: auto;
 
-	.fullish-page-wrapper {
-		display: block;
-		position: relative;
-		width: inherit;
-		height: inherit;
-	}
-
 	.panel {
 		display: flex;
 		position: relative;
@@ -61,13 +54,6 @@
 	// .fullish-page will grow to the total height of all panels (set by Javascript)
 	&[data-fullish-page-mode='full-page'],
 	&.fp-mode-full-page {
-		.fullish-page-wrapper {
-			position: sticky;
-			top: 0;
-			height: 100vh;
-			overflow: hidden;
-		}
-
 		.panel {
 			position: absolute;
 			top: 0;
