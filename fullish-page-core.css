@@ -8,12 +8,6 @@
   width: 100%;
   height: auto;
 }
-.fullish-page .fullish-page-wrapper {
-  display: block;
-  position: relative;
-  width: inherit;
-  height: inherit;
-}
 .fullish-page .panel {
   display: flex;
   position: relative;
@@ -46,12 +40,6 @@
  *     execpt to remove the attribute.
  * 3. `afterDestroy` is invoked.
  */
-.fullish-page[data-fullish-page-mode=full-page] .fullish-page-wrapper, .fullish-page.fp-mode-full-page .fullish-page-wrapper {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow: hidden;
-}
 .fullish-page[data-fullish-page-mode=full-page] .panel, .fullish-page.fp-mode-full-page .panel {
   position: absolute;
   top: 0;
