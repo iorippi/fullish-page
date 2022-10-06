@@ -164,7 +164,7 @@ const FullishPage = class {
 			this.fullPage = this.#fullPageTimeline();
 			Observer.create({
 				id: "full-page-observer",
-				type: "wheel,touch,pointer",
+				type: "wheel,touch",
 				wheelSpeed: -1,
 				onDown: () => !this.#animating && this.gotoPrev(),
 				onUp: () => !this.#animating && this.gotoNext(),
@@ -265,8 +265,14 @@ const FullishPage = class {
 		}
 	}
 
+	toggleButtons(on = true) {
+		if (this.btnNext) this.toggleNextButton(on);
+		if (this.btnPrev) this.togglePrevButton(on);
+	}
+
 	toggleNextButton(on = true) {
-		if (on) {
+		// Toggle on only if the current panel is not the last one
+		if (on && this.#currentPanelIndex < this.#panels.length - 1) {
 			this.twBtnNext.play();
 		} else {
 			this.twBtnNext.reverse();
@@ -314,15 +320,17 @@ const FullishPage = class {
 		let targetDepth = null;
 
 		// Check the index
-		if (targetPanelIndex < 0 || targetPanelIndex >= this.#nanels.length) return;
+		if (targetPanelIndex < 0 || targetPanelIndex >= this.#panels.length) return;
 
 		if (this.#mode === 'full-page') {
 			this.#animating = true;
 			this.#container.classList.add('animating');
+			this.toggleButtons(false);
 			fp.fullPage.tweenTo("panel-" + targetPanelIndex, {
 				onComplete: () => {
 					this.#animating = false;
 					this.#container.classList.remove('animating');
+					this.toggleButtons(true);
 				},
 			});
 		} else if (this.#mode === 'static') {
