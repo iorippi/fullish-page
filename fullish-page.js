@@ -26,16 +26,11 @@ const FullishPage = class {
 		// Configurable variables
 		this.#defaults = {
 				selector: '.fullish-page',
-				panelDepth: 1,
-				scrollDelay: 1,
 				tlPanelShowDuration: 1,
 				tlPanelHideDuration: 1,
 				tlPanelTransitionDuration: 1,
-				fastScrollThreshold: 2500,
-				triggerStart: "top top",
-				triggerEnd: "bottom bottom",
-				buttonNext: '.fullish-page-button-next', // TODO: Implement feature
-				buttonPrev: '.fullish-page-butotn-prev', // TODO: Implement feature
+				buttonNext: '.fullish-page-button-next',
+				buttonPrev: '.fullish-page-butotn-prev',
 				debug: false,
 		};
 		// Set configuration (override defaults)
@@ -95,6 +90,11 @@ const FullishPage = class {
 		}
 	}
 
+	#setCurrentPanelIndex(index) {
+		this.#currentPanelIndex = index;
+		this.#container.setAttribute('data-current-panel', index);
+	}
+
 	/*
 	 * Basic methods
 	 */
@@ -124,8 +124,6 @@ const FullishPage = class {
 		// Disable scroll history
 		if (history.scrollRestoration)
 			history.scrollRestoration = 'manual';
-
-		// TODO: Disable scroll depth history; maybe make it configurable?
 
 		this.#panels.forEach((panel, i) => {
 			panel.classList.add('panel-' + i);
@@ -173,14 +171,14 @@ const FullishPage = class {
 				tolerance: 10,
 				preventDefault: true
 			});
-			this.#currentPanelIndex = 0;
+			this.#setCurrentPanelIndex(0);
 			this.goto(0);
 			this.#container.classList.add('fp-mode-full-page');
 
 		} else if (mode === 'static') {
 			this.#container.setAttribute('data-fullish-page-mode', 'static');
-			this.log('[FullishPage.setMode] Setting static mode.'); // TODO
-			this.#currentPanelIndex = 0;
+			this.log('[FullishPage.setMode] Setting static mode.');
+			this.#setCurrentPanelIndex(0);
 			this.#container.classList.add('fp-mode-static');
 		}
 
@@ -233,7 +231,7 @@ const FullishPage = class {
 			timeline.add(this.tlPanelShow(panelIndex, panel).duration(durations.show));
 			timeline.call(() => {
 				this.log(`update index ${this.#currentPanelIndex} => ${panelIndex}`);
-				this.#currentPanelIndex = panelIndex;
+				this.#setCurrentPanelIndex(panelIndex);
 			});
 			timeline.addLabel("panel-" + panelIndex);
 
@@ -315,23 +313,20 @@ const FullishPage = class {
 	goto(targetPanelIndex, smooth = true) {
 		let targetDepth = null;
 
+		// Check the index
+		if (targetPanelIndex < 0 || targetPanelIndex >= this.#nanels.length) return;
+
 		if (this.#mode === 'full-page') {
-
-			if (targetPanelIndex < 0)
-				targetDepth = 0; // TODO: goto before fp
-			else if (targetPanelIndex < this.#panels.length) {
-				this.#animating = true;
-				fp.fullPage.tweenTo("panel-" + targetPanelIndex, {
-					onComplete: () => { this.#animating = false },
-				});
-			} else if (targetPanelIndex >= this.#panels.length)
-				return; // Do nothing when scrollTO after fp
-
+			this.#animating = true;
+			this.#container.classList.add('animating');
+			fp.fullPage.tweenTo("panel-" + targetPanelIndex, {
+				onComplete: () => {
+					this.#animating = false;
+					this.#container.classList.remove('animating');
+				},
+			});
 		} else if (this.#mode === 'static') {
 			targetDepth = this.#panels[targetPanelIndex].offsetTop;
-		}
-
-		if (targetDepth !== null) {
 			window.scroll({
 				top: targetDepth + 1, // TODO: Revisit to check if `+1` is good enough
 				left: 0,
