@@ -204,7 +204,7 @@ const FullishPage = class {
 				ScrollTrigger.create({
 					trigger: panel,
 					start: 'top center',
-					onEnter: () => {
+					onToggle: () => {
 						let tlPanelShowDuration = this.#config.tlPanelShowDuration,
 						    durationShow;
 						if (typeof tlPanelShowDuration === "number")
@@ -370,6 +370,8 @@ const FullishPage = class {
 				behavior: smooth ? 'smooth' : 'auto'
 			});
 		}
+
+		this.#setCurrentPanelIndex(targetPanelIndex);
 	}
 
 	gotoNext() {
