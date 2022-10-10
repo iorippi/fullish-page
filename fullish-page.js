@@ -122,6 +122,9 @@ const FullishPage = class {
 			this.onResize = this.onResize.bind(this);
 		window.addEventListener('resize', this.onResize);
 
+		// Measure innerHeight (Check with minimum window height for smartdevice)
+		document.documentElement.style.setProperty('--inner-height', window.innerHeight + 'px');
+
 		// Disable scroll history
 		if (history.scrollRestoration)
 			history.scrollRestoration = 'manual';

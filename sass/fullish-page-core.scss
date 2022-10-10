@@ -14,7 +14,7 @@
 		position: relative;
 		justify-content: center;
 		align-items: center;
-
+		min-height: var(--inner-height); // Script にてロード時にセット
 		padding: 20px;
 	}
 
@@ -59,7 +59,6 @@
 			top: 0;
 			left: 0;
 			width: inherit;
-			height: inherit;
 			&:not(:first-child) {
 				// Display only the first panel.
 				// Will be overrode by GSAP autoAlpha
