@@ -349,13 +349,19 @@ const FullishPage = class {
 			this.#animating = true;
 			this.#container.classList.add('animating');
 			this.toggleButtons(false);
-			fp.fullPage.tweenTo("panel-" + targetPanelIndex, {
-				onComplete: () => {
-					this.#animating = false;
-					this.#container.classList.remove('animating');
-					this.toggleButtons(true);
-				},
-			});
+			let complete = () => {
+				this.#animating = false;
+				this.#container.classList.remove('animating');
+				this.toggleButtons(true);
+			}
+			if (smooth) {
+				fp.fullPage.tweenTo("panel-" + targetPanelIndex, {
+					onComplete: complete,
+				});
+			} else {
+				fp.fullPage.seek("panel-" + targetPanelIndex);
+				complete();
+			}
 		} else if (this.#mode === 'static') {
 			targetDepth = this.#panels[targetPanelIndex].offsetTop;
 			window.scroll({
