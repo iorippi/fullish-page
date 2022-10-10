@@ -107,6 +107,7 @@ const FullishPage = class {
 		else {
 			this.#currentScreenWidth = screenWidth;
 			this.destroy();
+			// TODO: Should scroll to top before initializing if static -> fullpage
 			this.init(true);
 		}
 	}
