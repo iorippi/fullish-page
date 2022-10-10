@@ -41,6 +41,9 @@
  *     execpt to remove the attribute.
  * 3. `afterDestroy` is invoked.
  */
+.fullish-page[data-fullish-page-mode=static] .panel, .fullish-page.fp-mode-static .panel {
+  opacity: 0;
+}
 .fullish-page[data-fullish-page-mode=full-page] .panel, .fullish-page.fp-mode-full-page .panel {
   position: absolute;
   top: 0;

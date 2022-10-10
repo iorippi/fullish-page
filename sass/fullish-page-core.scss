@@ -48,6 +48,9 @@
 	// Static mode
 	&[data-fullish-page-mode='static'],
 	&.fp-mode-static {
+		.panel {
+			opacity: 0;
+		}
 	}
 
 	// FullPage mode before initializing finishes

@@ -145,6 +145,23 @@ const FullishPage = class {
 		this.afterInit(resized);
 	}
 
+	#defineMode() {
+		// Determines adequate mode and return the mode name [static|full-page]
+		// Get the height of the window minus the scrollbar and borders
+		let screenHeight = window.innerHeight;
+
+		// Get the biggest height of panels
+		let maxPanelHeight = this.props.panels.reduce((prevHeight, curPanel) => {
+			return Math.max(prevHeight, curPanel.scrollHeight);
+		}, 0);
+
+		// Set mode to static if any panel is higher than the height of the window
+		if (maxPanelHeight > screenHeight)
+			return 'static';
+		else
+			return 'full-page';
+	};
+
 	setMode(mode) {
 		// Check the parameter before execution.
 		try {
@@ -182,6 +199,25 @@ const FullishPage = class {
 		} else if (mode === 'static') {
 			this.#container.setAttribute('data-fullish-page-mode', 'static');
 			this.log('[FullishPage.setMode] Setting static mode.');
+
+			this.#panels.forEach((panel, panelIndex) => {
+				ScrollTrigger.create({
+					trigger: panel,
+					start: 'top center',
+					onEnter: () => {
+						let tlPanelShowDuration = this.#config.tlPanelShowDuration,
+						    durationShow;
+						if (typeof tlPanelShowDuration === "number")
+							durationShow = tlPanelShowDuration;
+						else
+							durationShow = tlPanelShowDuration[panelIndex];
+
+						this.tlPanelTransition(panelIndex, 'static');
+						this.tlPanelShow(panelIndex, panel).duration(durationShow);
+					}
+				});
+			});
+
 			this.#setCurrentPanelIndex(0);
 			this.#container.classList.add('fp-mode-static');
 		}
@@ -189,23 +225,6 @@ const FullishPage = class {
 		// Finish setting mode
 		this.#mode = mode;
 	}
-
-	#defineMode() {
-		// Determines adequate mode and return the mode name [static|full-page]
-		// Get the height of the window minus the scrollbar and borders
-		let screenHeight = window.innerHeight;
-
-		// Get the biggest height of panels
-		let maxPanelHeight = this.props.panels.reduce((prevHeight, curPanel) => {
-			return Math.max(prevHeight, curPanel.scrollHeight);
-		}, 0);
-
-		// Set mode to static if any panel is higher than the height of the window
-		if (maxPanelHeight > screenHeight)
-			return 'static';
-		else
-			return 'full-page';
-	};
 
 	#fullPageTimeline() {
 		// Define timeline
@@ -244,7 +263,7 @@ const FullishPage = class {
 				timeline.add(this.tlPanelHide(panelIndex, panel).duration(durations.hide));
 
 				// Panel transition
-				timeline.add(this.tlPanelTransition(panelIndex).duration(durations.transition));
+				timeline.add(this.tlPanelTransition(panelIndex + 1).duration(durations.transition));
 			}
 		});
 
@@ -360,17 +379,19 @@ const FullishPage = class {
 	 */
 	beforeInit(resized) {};
 	afterInit(resized) {};
-	tlPanelTransition(prevPanelIndex) {
-		let nextPanelIndex = prevPanelIndex + 1;
+	tlPanelTransition(nextPanelIndex, mode = 'full-page') {
+		let prevPanelIndex = nextPanelIndex - 1;
 
 		let tl = gsap.timeline({ 
 			defaults: {
 				ease: Linear.easeNone,
 			}
 		});
-		tl.to(this.props.panels[prevPanelIndex], {
-			autoAlpha: 0,
-		});
+		if (mode === 'full-page') {
+			tl.to(this.props.panels[prevPanelIndex], {
+				autoAlpha: 0,
+			});
+		}
 		tl.to(this.props.panels[nextPanelIndex], {
 			autoAlpha: 1,
 		}, "<");
