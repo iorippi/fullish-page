@@ -91,6 +91,7 @@ const FullishPage = class {
 	}
 
 	#setCurrentPanelIndex(index) {
+		index = parseInt(index);
 		this.#currentPanelIndex = index;
 		this.#container.setAttribute('data-current-panel', index);
 	}
