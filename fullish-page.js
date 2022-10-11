@@ -343,6 +343,8 @@ const FullishPage = class {
 	goto(targetPanelIndex, smooth = true) {
 		let targetDepth = null;
 
+		// TODO: translate text to targetPanelIndex (id, other selectors if possible).
+
 		// Check the index
 		if (targetPanelIndex < 0 || targetPanelIndex >= this.#panels.length) return;
 
