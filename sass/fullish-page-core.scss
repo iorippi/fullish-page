@@ -8,6 +8,7 @@
 	position: relative;
 	width: 100%; // Should be equal to the maximum viewport width
 	height: auto;
+	overflow: hidden;
 
 	.panel {
 		display: flex;
