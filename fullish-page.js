@@ -281,11 +281,13 @@ const FullishPage = class {
 
 		if (this.btnNext) {
 			this.twBtnNext = gsap.to(this.btnNext, btnDefault);
-			this.btnNext.addEventListener('click', this.gotoNext.bind(this)); // TODO: fix scoping
+			this.gotoNextEvent = this.gotoNext.bind(this);
+			this.btnNext.addEventListener('click', this.gotoNextEvent);
 		}
 		if (this.btnPrev) {
 			this.twBtnPrev = gsap.to(this.btnPrev, btnDefault);
-			this.btnPrev.addEventListener('click', this.gotoPrev.bind(this)); // TODO: fix scoping
+			this.gotoPrevEvent = this.gotoPrev.bind(this);
+			this.btnPrev.addEventListener('click', this.gotoPrevEvent);
 		}
 	}
 
@@ -331,7 +333,10 @@ const FullishPage = class {
 			this.#container.classList.remove('fp-mode-static');
 		}
 
-		// TODO: remove button eventlisteners and tween
+		if (this.btnNext)
+			this.btnNext.removeEventListener('click', this.gotoNextEvent);
+		if (this.btnPrev)
+			this.btnPrev.removeEventListener('click', this.gotoPrevEvent);
 
 		window.removeEventListener('resize', this.onResize);
 
@@ -368,7 +373,7 @@ const FullishPage = class {
 		} else if (this.#mode === 'static') {
 			targetDepth = this.#panels[targetPanelIndex].offsetTop;
 			window.scroll({
-				top: targetDepth + 1, // TODO: Revisit to check if `+1` is good enough
+				top: targetDepth + 1,
 				left: 0,
 				behavior: smooth ? 'smooth' : 'auto'
 			});
