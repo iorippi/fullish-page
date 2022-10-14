@@ -33,6 +33,7 @@ const FullishPage = class {
 			buttonPrev: '.fullish-page-butotn-prev',
 			clearScrollMemory: true,
 			debug: false,
+			defaultPanel: 0,
 		};
 		// Set configuration (override defaults)
 		this.#config = {};
@@ -77,6 +78,12 @@ const FullishPage = class {
 		return this.#config;
 	}
 
+	set updateDefaultPanel(panelName) {
+		let panelIndex = this.#checkIndex(panelName);
+		if (panelIndex !== false)
+			this.#config.defaultPanel = panelIndex;
+	}
+
 	// TODO: Make it so it won't accept change on private variables: present returned value only for referencing
 	get props() {
 		return {
@@ -89,6 +96,33 @@ const FullishPage = class {
 			btnNext: this.btnNext,
 			btnPrev: this.btnPrev,
 		}
+	}
+
+	#checkIndex(panelName) {
+		let panelIndex,
+			  elem;
+
+		// Check if the name is valid selector
+		try {
+			elem = document.querySelector(decodeURIComponent(panelName));
+		} catch {
+			elem = null;
+		}
+		if (elem !== null) {
+			this.#panels.forEach((panel, i) => {
+				if (panel === elem)
+					panelIndex = i;
+			});
+		} else {
+			// If not, assign the name as an index
+			panelIndex = parseInt(panelName);
+		}
+
+		// Test index validity
+		if (isNaN(panelIndex) || panelIndex < 0 || panelIndex >= this.#panels.length)
+			return false;
+		else
+			return panelIndex;
 	}
 
 	#setCurrentPanelIndex(index) {
@@ -110,11 +144,11 @@ const FullishPage = class {
 			this.#currentScreenWidth = screenWidth;
 			this.destroy();
 			// TODO: Should scroll to top before initializing if static -> fullpage
-			this.init(true);
+			this.init({ resized: true });
 		}
 	}
 
-	init(resized = false) {
+	init({ resized = false } = {}) {
 		if (this.#config.clearScrollMemory)
 			ScrollTrigger.clearScrollMemory();
 
@@ -138,10 +172,10 @@ const FullishPage = class {
 			panel.classList.add('panel-' + i);
 		});
 
-		// Set mode to either 'full-page' or 'static'
-		this.setMode(this.#defineMode());
-
 		this.setButtons();
+
+		// Set mode to either 'full-page' or 'static'
+		this.setMode(this.#defineMode(), resized);
 
 		// Finish initialization
 		this.#initialized = true;
@@ -167,7 +201,7 @@ const FullishPage = class {
 			return 'full-page';
 	};
 
-	setMode(mode) {
+	setMode(mode, resized = false) {
 		// Check the parameter before execution.
 		try {
 			if (!this.#modes.includes(mode))
@@ -177,7 +211,6 @@ const FullishPage = class {
 			return;
 		}
 
-		// Set GSAP ScrollTrigger
 		if (mode === 'full-page') {
 			this.#container.setAttribute('data-fullish-page-mode', 'full-page');
 			gsap.set(document.documentElement, {
@@ -197,21 +230,21 @@ const FullishPage = class {
 				tolerance: 10,
 				preventDefault: true
 			});
-			this.#setCurrentPanelIndex(0);
-			this.goto(0);
+			
 			this.#container.classList.add('fp-mode-full-page');
 
 		} else if (mode === 'static') {
 			this.#container.setAttribute('data-fullish-page-mode', 'static');
 			this.log('[FullishPage.setMode] Setting static mode.');
 
+			// Set GSAP ScrollTrigger
 			this.#panels.forEach((panel, panelIndex) => {
-				ScrollTrigger.create({
-					trigger: panel,
-					start: 'top center',
-					onToggle: () => {
+				panel.classList.remove('played');
+				let action = () => {
+					// Play only the first time
+					if (!panel.classList.contains('played')) {
 						let tlPanelShowDuration = this.#config.tlPanelShowDuration,
-						    durationShow;
+								durationShow;
 						if (typeof tlPanelShowDuration === "number")
 							durationShow = tlPanelShowDuration;
 						else
@@ -219,16 +252,38 @@ const FullishPage = class {
 
 						this.tlPanelTransition(panelIndex, 'static');
 						this.tlPanelShow(panelIndex, panel).duration(durationShow);
+						panel.classList.add('played');
 					}
+				};
+				ScrollTrigger.create({
+					id: 'static-trigger-' + panelIndex,
+					trigger: panel,
+					start: 'top center',
+					onEnter: () => {
+						if (this.#initialized) {
+							action();
+							this.#setCurrentPanelIndex(panelIndex);
+						}
+					},
+					onEnterBack: () => {
+						if (this.#initialized) {
+							this.#setCurrentPanelIndex(panelIndex);
+						}
+					},
 				});
 			});
 
-			this.#setCurrentPanelIndex(0);
 			this.#container.classList.add('fp-mode-static');
 		}
 
 		// Finish setting mode
 		this.#mode = mode;
+
+		// Set panel
+		if (resized)
+			this.goto(this.#currentPanelIndex, false);
+		else
+			this.goto(this.#config.defaultPanel, false);
 	}
 
 	#fullPageTimeline() {
@@ -335,6 +390,9 @@ const FullishPage = class {
 			});
 		} else if (this.#mode === 'static') {
 			this.#container.classList.remove('fp-mode-static');
+			this.#panels.forEach((panel, i) => {
+				ScrollTrigger.getById('static-trigger-' + i).kill();
+			});
 		}
 
 		if (this.btnNext)
@@ -349,13 +407,12 @@ const FullishPage = class {
 		this.afterDestroy();
 	}
 
-	goto(targetPanelIndex, smooth = true) {
-		let targetDepth = null;
+	goto(targetPanelName, smooth = true) {
+		// Set the index
+		let targetPanelIndex = this.#checkIndex(targetPanelName);
+		if (targetPanelIndex === false) return;
 
-		// TODO: translate text to targetPanelIndex (id, other selectors if possible).
-
-		// Check the index
-		if (targetPanelIndex < 0 || targetPanelIndex >= this.#panels.length) return;
+		this.log(`[FullishPage.goto] Go to panel index ${targetPanelIndex}`);
 
 		if (this.#mode === 'full-page') {
 			this.#animating = true;
@@ -375,7 +432,7 @@ const FullishPage = class {
 				complete();
 			}
 		} else if (this.#mode === 'static') {
-			targetDepth = this.#panels[targetPanelIndex].offsetTop;
+			let targetDepth = this.#panels[targetPanelIndex].offsetTop;
 			window.scroll({
 				top: targetDepth + 1,
 				left: 0,
