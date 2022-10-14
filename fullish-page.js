@@ -25,13 +25,14 @@ const FullishPage = class {
 	constructor(config = {}) {
 		// Configurable variables
 		this.#defaults = {
-				selector: '.fullish-page',
-				tlPanelShowDuration: 1,
-				tlPanelHideDuration: 1,
-				tlPanelTransitionDuration: 1,
-				buttonNext: '.fullish-page-button-next',
-				buttonPrev: '.fullish-page-butotn-prev',
-				debug: false,
+			selector: '.fullish-page',
+			tlPanelShowDuration: 1,
+			tlPanelHideDuration: 1,
+			tlPanelTransitionDuration: 1,
+			buttonNext: '.fullish-page-button-next',
+			buttonPrev: '.fullish-page-butotn-prev',
+			clearScrollMemory: true,
+			debug: false,
 		};
 		// Set configuration (override defaults)
 		this.#config = {};
@@ -114,6 +115,9 @@ const FullishPage = class {
 	}
 
 	init(resized = false) {
+		if (this.#config.clearScrollMemory)
+			ScrollTrigger.clearScrollMemory();
+
 		this.beforeInit(resized);
 
 		// Set resize event action

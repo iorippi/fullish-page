@@ -39,6 +39,7 @@ fp.init();
 | tlPanelTransitionDuration  | integer           |                           1 | [Full-Page mode only] Duration for panel-to-panel transition animation (in seconds).                                                                                               |
 | buttonNext                 | string            | '.fullish-page-button-next' | [TODO] Selector for next panel button                                                                                                                                              |
 | buttonPrev                 | string            | .fullish-page-button-prev'  | [TODO] Selector for previous panel button                                                                                                                                          |
+| clearScrollMemory          | boolean           |                       TRUE  | Toggle clearScrollMemory on init                                                                                                                                                   |
 | debug                      | boolean           |                       FALSE | Debug flag. If set to `true`, it enables console output as well as GSAP ScrollTrigger's debugging feature.                                                                         |
 
 
