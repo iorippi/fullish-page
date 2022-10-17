@@ -32,8 +32,8 @@ const FullishPage = class {
 			buttonNext: '.fullish-page-button-next',
 			buttonPrev: '.fullish-page-butotn-prev',
 			clearScrollMemory: true,
-			debug: false,
 			defaultPanel: 0,
+			debug: false,
 		};
 		// Set configuration (override defaults)
 		this.#config = {};
@@ -230,7 +230,7 @@ const FullishPage = class {
 				tolerance: 10,
 				preventDefault: true
 			});
-			
+
 			this.#container.classList.add('fp-mode-full-page');
 
 		} else if (mode === 'static') {
