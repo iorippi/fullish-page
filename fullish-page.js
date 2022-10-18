@@ -141,9 +141,9 @@ const FullishPage = class {
 		let screenWidth = document.body.clientWidth;
 		if (screenWidth === this.#currentScreenWidth) return;
 		else {
+			this.log('[FullishPage.onResize] Screen width resizing detected:', this.#currentScreenWidth, '->', screenWidth);
 			this.#currentScreenWidth = screenWidth;
 			this.destroy();
-			// TODO: Should scroll to top before initializing if static -> fullpage
 			this.init({ resized: true });
 		}
 	}
