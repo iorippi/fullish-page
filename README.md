@@ -1,5 +1,7 @@
 # Fullish-Page
 
+> __Archived proeject. This project is no longer maintained.__
+
 Responsive FullPage plugin (for GSAP)
 
 
